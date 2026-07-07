@@ -17,6 +17,7 @@ import AuthYellowButton from '../shared/AuthYellowButton';
 import authStyles from '../shared/authStyles';
 import styles from './styles';
 import { healthScreenStyles } from '@/styles/healthScreenStyles';
+import { formatErrorMessage } from '@/utils/formatError';
 
 const CompleteProfile: React.FC = () => {
     const user = useSelector((s) => s.auth.userData) as AuthUserProfile;
@@ -89,7 +90,7 @@ const CompleteProfile: React.FC = () => {
             await syncAuthFromSupabase();
             Toast.show({ type: 'success', text1: 'Profile completed' });
         } catch (e: unknown) {
-            Toast.show({ type: 'error', text1: 'Setup failed', text2: String(e) });
+            Toast.show({ type: 'error', text1: 'Setup failed', text2: formatErrorMessage(e) });
         } finally {
             setIsLoading(false);
         }

@@ -14,9 +14,16 @@ const Stack = createNativeStackNavigator<DoctorStackParamList>();
 
 export const DoctorStack = () => {
     const user = useSelector((s: RootState) => s.auth.userData) as AuthUserProfile;
-    const isPending = user?.doctor_status === 'PENDING';
 
-    if (isPending) {
+    if (!user?.doctor_id) {
+        return (
+            <Stack.Navigator screenOptions={{ headerShown: false }} id={undefined}>
+                <Stack.Screen name={routes.auth.completeProfile} component={Screens.CompleteProfile} />
+            </Stack.Navigator>
+        );
+    }
+
+    if (user.doctor_status === 'PENDING') {
         return (
             <Stack.Navigator screenOptions={{ headerShown: false }} id={undefined}>
                 <Stack.Screen name={routes.doctor.pendingApproval} component={Screens.DoctorPendingApproval} />

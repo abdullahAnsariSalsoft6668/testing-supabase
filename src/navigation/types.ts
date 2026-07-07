@@ -45,6 +45,7 @@ export type DoctorStackParamList = DoctorTabParamList & {
     SlotForm: { date?: string } | undefined;
     DoctorAppointmentDetail: { appointmentId: string };
     DoctorPendingApproval: undefined;
+    CompleteProfile: undefined;
 };
 
 export type AdminTabParamList = {
