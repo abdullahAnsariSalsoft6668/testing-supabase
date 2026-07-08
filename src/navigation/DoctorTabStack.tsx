@@ -9,10 +9,10 @@ import { theme } from '@/styles/theme';
 const Tab = createBottomTabNavigator<DoctorTabParamList>();
 
 const DOCTOR_TABS = [
-    { name: routes.doctor.tab.dashboard, label: 'Home', icon: 'dashboard' as const, iconActive: 'dashboardActive' as const },
-    { name: routes.doctor.tab.schedule, label: 'Schedule', icon: 'calendar' as const, iconActive: 'calendarBlue' as const },
-    { name: routes.doctor.tab.appointments, label: 'Visits', icon: 'calendarClock' as const, iconActive: 'calendarClock' as const },
-    { name: routes.doctor.tab.profile, label: 'Profile', icon: 'menu' as const, iconActive: 'menuActive' as const },
+    { name: routes.doctor.tab.dashboard, label: 'Home', icon: 'healthTabHome' as const },
+    { name: routes.doctor.tab.schedule, label: 'Schedule', icon: 'healthTabCalendar' as const },
+    { name: routes.doctor.tab.appointments, label: 'Visits', icon: 'healthTabVisits' as const },
+    { name: routes.doctor.tab.profile, label: 'Profile', icon: 'healthTabUser' as const },
 ];
 
 export const DoctorTabs = () => (

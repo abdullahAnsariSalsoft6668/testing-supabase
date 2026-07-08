@@ -54,7 +54,7 @@ export const Routes = () => {
         screen = <Stack.Screen name="Auth" component={AuthStack} />;
     } else if (user?.role === 'ADMIN') {
         screen = <Stack.Screen name="Admin" component={AdminStack} />;
-    } else if (user?.role === 'DOCTOR') {
+    } else if (user?.role === 'DOCTOR' || user?.doctor_id || user?.doctor?.id) {
         screen = <Stack.Screen name="Doctor" component={DoctorStack} />;
     } else {
         screen = <Stack.Screen name="Patient" component={PatientStack} />;

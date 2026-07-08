@@ -1,5 +1,4 @@
 import * as Screens from '@/screens';
-import type React from 'react';
 
 const routes = {
     auth: {
@@ -58,24 +57,6 @@ const routes = {
         doctorTab: 'DoctorTabs',
         adminTab: 'AdminTabs',
     },
-    /** @deprecated Legacy grocery routes */
-    tab: {
-        home: 'Home',
-        deals: 'Deals',
-        cashback: 'Cashback',
-        insights: 'Insights',
-        menu: 'Menu',
-    },
-    main: {
-        settings: 'Settings',
-        profile: 'Profile',
-        helpHowItWorks: 'HelpHowItWorks',
-        privacyFirst: 'PrivacyFirst',
-        supportedStores: 'SupportedStores',
-        productDetails: 'ProductDetails',
-        savingBarcode: 'SavingBarcode',
-        savingBarcodeRedeemed: 'SavingBarcodeRedeemed',
-    },
 } as const;
 
 export const authRoutes = {
@@ -113,7 +94,3 @@ export const adminTabRoutes = {
 };
 
 export default routes;
-
-/** @deprecated Legacy grocery routes — kept for unused screen files during migration */
-export const mainRoutes: Record<string, React.ComponentType> = {};
-export const tabRoutes: Record<string, React.ComponentType> = {};

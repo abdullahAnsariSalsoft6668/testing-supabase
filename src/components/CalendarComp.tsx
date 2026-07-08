@@ -117,6 +117,10 @@ export interface CalendarCompProps {
     theme?: Partial<CalendarTheme>;
     /** Container style (e.g. for card padding) */
     style?: ViewStyle;
+    /** Latest selectable date (YYYY-MM-DD) */
+    maxDate?: string;
+    /** Earliest selectable date (YYYY-MM-DD) */
+    minDate?: string;
 }
 
 const CalendarComp: React.FC<CalendarCompProps> = ({
@@ -131,6 +135,8 @@ const CalendarComp: React.FC<CalendarCompProps> = ({
     onMonthChange,
     theme: themeOverride,
     style,
+    maxDate,
+    minDate,
 }) => {
     const theme = useMemo(
         () => ({ ...defaultTheme, ...themeOverride }),
@@ -165,6 +171,8 @@ const CalendarComp: React.FC<CalendarCompProps> = ({
             hideExtraDays={hideExtraDays}
             firstDay={firstDay}
             style={style}
+            maxDate={maxDate}
+            minDate={minDate}
         />
     );
 };

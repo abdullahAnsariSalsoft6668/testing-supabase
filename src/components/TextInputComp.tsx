@@ -80,7 +80,11 @@ const TextInputComp: React.FC<TextInputCompProps> = ({
 
     const passwordToggleIcon =
         isPassword && !rightIcon ? (
-            <MyIcons name={passwordVisible ? 'eye' : 'eyeclose'} size={20} />
+            <MyIcons
+                name={passwordVisible ? 'eyeclose' : 'eye'}
+                size={20}
+                stroke={Colors.textSecondary}
+            />
         ) : null;
 
     const resolvedRightIcon = rightIcon ?? passwordToggleIcon;

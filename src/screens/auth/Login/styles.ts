@@ -29,6 +29,12 @@ const styles = StyleSheet.create({
         backgroundColor: palette.teal.main,
         borderColor: palette.teal.main,
     },
+    checkMark: {
+        fontSize: moderateScale(12),
+        fontWeight: '700',
+        color: palette.neutral.white,
+        lineHeight: moderateScale(14),
+    },
     rememberText: {
         fontSize: moderateScale(13),
         fontFamily: fontFamily.regular,

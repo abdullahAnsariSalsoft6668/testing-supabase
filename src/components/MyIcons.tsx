@@ -40,12 +40,24 @@ import DownTiltArrow from '@/assets/icons/down-tilt-arrow.svg';
 import Down from '@/assets/icons/down.svg';
 import EditIcon from '@/assets/icons/edit-icon.svg';
 import EmailIcon from '@/assets/icons/email-icon.svg';
+import Eye from '@/assets/icons/eye.svg';
+import Eyeclose from '@/assets/icons/eyeclose.svg';
 import Fail from '@/assets/icons/fail.svg';
 import FilterPrimary from '@/assets/icons/filter-primary.svg';
 import Filter from '@/assets/icons/filter.svg';
 import Fire from '@/assets/icons/fire.svg';
 import GoodFeedback from '@/assets/icons/good-feedback.svg';
 import GreenCircleCheck from '@/assets/icons/green-circle-check.svg';
+import HealthTabCalendar from '@/assets/icons/health-tab-calendar.svg';
+import HealthTabDepartments from '@/assets/icons/health-tab-departments.svg';
+import HealthTabDoctors from '@/assets/icons/health-tab-doctors.svg';
+import HealthTabFile from '@/assets/icons/health-tab-file.svg';
+import HealthTabHome from '@/assets/icons/health-tab-home.svg';
+import HealthTabHospital from '@/assets/icons/health-tab-hospital.svg';
+import HealthTabMenu from '@/assets/icons/health-tab-menu.svg';
+import HealthTabSearch from '@/assets/icons/health-tab-search.svg';
+import HealthTabUser from '@/assets/icons/health-tab-user.svg';
+import HealthTabVisits from '@/assets/icons/health-tab-visits.svg';
 import HomeActive from '@/assets/icons/home-active.svg';
 import Home from '@/assets/icons/home.svg';
 import InsightActive from '@/assets/icons/insight-active.svg';
@@ -131,12 +143,24 @@ export type IconName =
   | 'down'
   | 'editIcon'
   | 'emailIcon'
+  | 'eye'
+  | 'eyeclose'
   | 'fail'
   | 'filterPrimary'
   | 'filter'
   | 'fire'
   | 'goodFeedback'
   | 'greenCircleCheck'
+  | 'healthTabCalendar'
+  | 'healthTabDepartments'
+  | 'healthTabDoctors'
+  | 'healthTabFile'
+  | 'healthTabHome'
+  | 'healthTabHospital'
+  | 'healthTabMenu'
+  | 'healthTabSearch'
+  | 'healthTabUser'
+  | 'healthTabVisits'
   | 'homeActive'
   | 'home'
   | 'insightActive'
@@ -224,12 +248,24 @@ const iconMap: Record<IconName, IconComponent> = {
   down: Down,
   editIcon: EditIcon,
   emailIcon: EmailIcon,
+  eye: Eye,
+  eyeclose: Eyeclose,
   fail: Fail,
   filterPrimary: FilterPrimary,
   filter: Filter,
   fire: Fire,
   goodFeedback: GoodFeedback,
   greenCircleCheck: GreenCircleCheck,
+  healthTabCalendar: HealthTabCalendar,
+  healthTabDepartments: HealthTabDepartments,
+  healthTabDoctors: HealthTabDoctors,
+  healthTabFile: HealthTabFile,
+  healthTabHome: HealthTabHome,
+  healthTabHospital: HealthTabHospital,
+  healthTabMenu: HealthTabMenu,
+  healthTabSearch: HealthTabSearch,
+  healthTabUser: HealthTabUser,
+  healthTabVisits: HealthTabVisits,
   homeActive: HomeActive,
   home: Home,
   insightActive: InsightActive,
@@ -309,6 +345,7 @@ const MyIcons: React.FC<MyIconsProps> = ({
       <IconComponent
         width={size}
         height={size}
+        color={stroke}
         stroke={stroke || undefined}
         fill={fill}
       />

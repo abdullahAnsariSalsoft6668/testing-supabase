@@ -1,14 +1,14 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 
-import { HealthScreenHeader, StatusBadge } from '@/components/health';
+import { DetailSkeleton, HealthScreenHeader, StatusBadge } from '@/components/health';
 import TextComp from '@/components/TextComp';
 import { DoctorStackParamList } from '@/navigation/types';
-import { updateAppointmentStatus } from '@/services/appointmentService';
-import { getSupabase } from '@/utils/supabase';
+import { getAppointmentById, updateAppointmentStatus } from '@/services/appointmentService';
 import { getUserDisplayName } from '@/utils/userDisplay';
+import { formatErrorMessage } from '@/utils/formatError';
 import { healthScreenStyles } from '@/styles/healthScreenStyles';
 import type { Appointment, AppointmentStatus } from '@/types/database';
 
@@ -18,18 +18,20 @@ const DoctorAppointmentDetail = () => {
     const [appointment, setAppointment] = useState<Appointment | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const load = () => {
-        getSupabase()
-            .from('appointments')
-            .select('*, patients(*, users(*))')
-            .eq('id', route.params.appointmentId)
-            .single()
-            .then(({ data }) => setAppointment(data as Appointment))
-            .catch(() => {})
-            .then(() => setLoading(false));
+    const load = async () => {
+        setLoading(true);
+        try {
+            const row = await getAppointmentById(route.params.appointmentId);
+            setAppointment(row);
+        } catch (e: unknown) {
+            setAppointment(null);
+            Toast.show({ type: 'error', text1: 'Failed to load visit', text2: formatErrorMessage(e) });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    useFocusEffect(useCallback(() => { load(); }, [route.params.appointmentId]));
+    useFocusEffect(useCallback(() => { void load(); }, [route.params.appointmentId]));
 
     const setStatus = async (status: AppointmentStatus) => {
         try {
@@ -48,7 +50,7 @@ const DoctorAppointmentDetail = () => {
             </HealthScreenHeader>
             <ScrollView contentContainerStyle={[healthScreenStyles.body, healthScreenStyles.scrollContent]}>
                 {loading || !appointment ? (
-                    <ActivityIndicator style={{ marginTop: 24 }} />
+                    <DetailSkeleton rows={3} />
                 ) : (
                     <View style={healthScreenStyles.card}>
                         <StatusBadge status={appointment.status} />

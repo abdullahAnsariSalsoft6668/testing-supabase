@@ -5,7 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-type ScreenType = 'auth' | 'main' | 'tab';
+type ScreenType = 'auth';
 
 // Helper functions
 const toPascalCase = (str: string) => str.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[-_\s]/).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join('');
@@ -16,15 +16,12 @@ function deleteScreen(screenName: string, screenType: ScreenType): void {
     const projectRoot = path.join(__dirname, '..', '..');
     const routeKey = getRouteKey(screenName);
     const componentName = toPascalCase(screenName);
-    const section = screenType === 'auth' ? 'auth' : screenType === 'tab' ? 'tab' : 'main';
+    const section = 'auth';
 
     console.log(`\n🗑️ Deleting ${screenType} screen: ${screenName}\n`);
 
     // 1. Delete Folder
-    const subDir = screenType === 'auth' ? 'auth' : 'main';
-    let folder = '';
-    if (screenType === 'tab') folder = path.join(projectRoot, 'src', 'screens', 'main', 'TabScreens', componentName);
-    else folder = path.join(projectRoot, 'src', 'screens', subDir, componentName);
+    const folder = path.join(projectRoot, 'src', 'screens', 'auth', componentName);
 
     if (fs.existsSync(folder)) {
         fs.rmSync(folder, { recursive: true, force: true });
@@ -45,16 +42,13 @@ function deleteScreen(screenName: string, screenType: ScreenType): void {
     if (fs.existsSync(routesFile)) {
         let content = fs.readFileSync(routesFile, 'utf8');
 
-        // Remove from routes object
         const objRegex = new RegExp(`(${section}:\\s*{)([^}]*)(})`, 's');
         content = content.replace(objRegex, (m, p1, p2, p3) => {
             const entryRegex = new RegExp(`\\s+${routeKey}:\\s*'[^']+',?\\n?`, 'g');
             return `${p1}${p2.replace(entryRegex, '')}${p3}`;
         });
 
-        // Remove from mapping object
-        const mappingName = screenType === 'auth' ? 'authRoutes' : screenType === 'tab' ? 'tabRoutes' : 'mainRoutes';
-        const mapRegex = new RegExp(`(export const ${mappingName} = \\{)([^}]*)(\\})`, 's');
+        const mapRegex = new RegExp(`(export const authRoutes = \\{)([^}]*)(\\})`, 's');
         content = content.replace(mapRegex, (m, p1, p2, p3) => {
             const propRegex = new RegExp(`\\s+\\[routes\\.${section}\\.${routeKey}\\]:[^,]+,?\\n?`, 'g');
             return `${p1}${p2.replace(propRegex, '')}${p3}`;
@@ -65,14 +59,8 @@ function deleteScreen(screenName: string, screenType: ScreenType): void {
     }
 
     // 4. Update Navigation
-    let navPath = '', prop = '';
-    if (screenType === 'auth') {
-        navPath = path.join(projectRoot, 'src', 'navigation', 'AuthStack.tsx');
-        prop = `routes.auth.${routeKey}`;
-    } else {
-        navPath = path.join(projectRoot, 'src', 'navigation', screenType === 'tab' ? 'TabStack.tsx' : 'MainStack.tsx');
-        prop = `routes.main.${routeKey}`;
-    }
+    const navPath = path.join(projectRoot, 'src', 'navigation', 'AuthStack.tsx');
+    const prop = `routes.auth.${routeKey}`;
 
     if (fs.existsSync(navPath)) {
         let content = fs.readFileSync(navPath, 'utf8');
@@ -85,8 +73,7 @@ function deleteScreen(screenName: string, screenType: ScreenType): void {
     const typesFile = path.join(projectRoot, 'src', 'navigation', 'types.ts');
     if (fs.existsSync(typesFile)) {
         let content = fs.readFileSync(typesFile, 'utf8');
-        const listName = screenType === 'auth' ? 'AuthStackParamList' : 'MainStackParamList';
-        const listRegex = new RegExp(`(export type ${listName} = \\{)(.*?)(\\n};)`, 's');
+        const listRegex = new RegExp(`(export type AuthStackParamList = \\{)(.*?)(\\n};)`, 's');
         content = content.replace(listRegex, (m, p1, p2, p3) => {
             const entryRegex = new RegExp(`^\\s+${componentName}:\\s*undefined;?\\n?`, 'gm');
             let updatedP2 = p2.replace(entryRegex, '');
@@ -102,5 +89,5 @@ function deleteScreen(screenName: string, screenType: ScreenType): void {
 }
 
 const args = process.argv.slice(2);
-if (args[0]) args[0].split(',').forEach(n => deleteScreen(n.trim(), (args[1] || 'main') as ScreenType));
-else console.log('Usage: ts-node delete-screen.ts <screenName> [type]');
+if (args[0]) args[0].split(',').forEach(n => deleteScreen(n.trim(), 'auth'));
+else console.log('Usage: ts-node delete-screen.ts <screenName>');

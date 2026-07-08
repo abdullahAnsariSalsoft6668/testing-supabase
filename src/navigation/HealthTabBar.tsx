@@ -1,6 +1,6 @@
 import MyIcons, { IconName } from '@/components/MyIcons';
 import TextComp from '@/components/TextComp';
-import { TAB_ICON_SIZE, tabBarStyles } from '@/navigation/tabBarStyles';
+import { TAB_ACTIVE_COLOR, TAB_ICON_SIZE, TAB_INACTIVE_COLOR, tabBarStyles } from '@/navigation/tabBarStyles';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
@@ -10,7 +10,6 @@ export type TabConfigItem = {
     name: string;
     label: string;
     icon: IconName;
-    iconActive: IconName;
 };
 
 type HealthTabBarProps = BottomTabBarProps & {
@@ -28,7 +27,7 @@ const HealthTabBar = ({ state, descriptors, navigation, tabConfig }: HealthTabBa
                         const config = tabConfig.find((t) => t.name === route.name) ?? tabConfig[0];
                         const { options } = descriptors[route.key];
                         const isFocused = state.index === index;
-                        const iconName = isFocused ? config.iconActive : config.icon;
+                        const iconColor = isFocused ? TAB_ACTIVE_COLOR : TAB_INACTIVE_COLOR;
 
                         return (
                             <TouchableOpacity
@@ -48,7 +47,7 @@ const HealthTabBar = ({ state, descriptors, navigation, tabConfig }: HealthTabBa
                                 style={tabBarStyles.tabItem}
                                 activeOpacity={0.7}
                             >
-                                <MyIcons name={iconName} size={TAB_ICON_SIZE} />
+                                <MyIcons name={config.icon} size={TAB_ICON_SIZE} stroke={iconColor} />
                                 <TextComp
                                     text={config.label}
                                     style={[

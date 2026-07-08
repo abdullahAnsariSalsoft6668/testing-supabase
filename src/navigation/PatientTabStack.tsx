@@ -9,11 +9,11 @@ import { theme } from '@/styles/theme';
 const Tab = createBottomTabNavigator<PatientTabParamList>();
 
 const PATIENT_TABS = [
-    { name: routes.patient.tab.home, label: 'Home', icon: 'home' as const, iconActive: 'homeActive' as const },
-    { name: routes.patient.tab.explore, label: 'Explore', icon: 'shop' as const, iconActive: 'shop' as const },
-    { name: routes.patient.tab.appointments, label: 'Visits', icon: 'calendarClock' as const, iconActive: 'calendarClock' as const },
-    { name: routes.patient.tab.reports, label: 'Reports', icon: 'documentIcon' as const, iconActive: 'documentIcon' as const },
-    { name: routes.patient.tab.profile, label: 'Profile', icon: 'menu' as const, iconActive: 'menuActive' as const },
+    { name: routes.patient.tab.home, label: 'Home', icon: 'healthTabHome' as const },
+    { name: routes.patient.tab.explore, label: 'Explore', icon: 'healthTabSearch' as const },
+    { name: routes.patient.tab.appointments, label: 'Visits', icon: 'healthTabVisits' as const },
+    { name: routes.patient.tab.reports, label: 'Reports', icon: 'healthTabFile' as const },
+    { name: routes.patient.tab.profile, label: 'Profile', icon: 'healthTabUser' as const },
 ];
 
 export const PatientTabs = () => (

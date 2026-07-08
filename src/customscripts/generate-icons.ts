@@ -111,6 +111,7 @@ const MyIcons: React.FC<MyIconsProps> = ({
       <IconComponent
         width={size}
         height={size}
+        color={stroke}
         stroke={stroke || undefined}
         fill={fill}
       />

@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as chokidar from 'chokidar';
 
-type ScreenType = 'auth' | 'main' | 'tab';
+type ScreenType = 'auth';
 
 interface ScreenInfo {
     screenName: string;
@@ -23,21 +23,20 @@ const getRouteKey = (name: string) => toCamelCase(name);
 // Generate screen component content
 function generateScreenComponent(screenName: string): string {
     const componentName = toPascalCase(screenName);
-    return `import HeaderComp from '@/components/HeaderComp';
+    return `import { HealthScreenHeader } from '@/components/health';
 import TextComp from '@/components/TextComp';
-import WrapperContainer from '@/components/WrapperContainer';
 import React from 'react';
-import { View } from 'react-native';
-import styles from './styles';
+import { ScrollView, View } from 'react-native';
+import { healthScreenStyles } from '@/styles/healthScreenStyles';
 
 const ${componentName}: React.FC = () => {
     return (
-        <WrapperContainer style={styles.container}>
-            <HeaderComp title="${componentName}" />
-            <View style={styles.content}>
+        <View style={healthScreenStyles.screen}>
+            <HealthScreenHeader title="${componentName}" subtitle="" />
+            <ScrollView contentContainerStyle={[healthScreenStyles.body, healthScreenStyles.scrollContent]}>
                 <TextComp text="Welcome to ${componentName}" />
-            </View>
-        </WrapperContainer>
+            </ScrollView>
+        </View>
     );
 };
 
@@ -92,7 +91,7 @@ function updateRoutesFile(screenName: string, screenType: ScreenType): void {
     let content = fs.readFileSync(routesPath, 'utf8');
     const routeKey = getRouteKey(screenName);
     const componentName = toPascalCase(screenName);
-    const section = screenType === 'auth' ? 'auth' : screenType === 'tab' ? 'tab' : 'main';
+    const section = 'auth';
 
     // 1. Add to routes object
     const objRegex = new RegExp(`(${section}:\\s*{)([^}]*)(})`, 's');
@@ -105,7 +104,7 @@ function updateRoutesFile(screenName: string, screenType: ScreenType): void {
     });
 
     // 2. Add to mapping object
-    const mappingName = screenType === 'auth' ? 'authRoutes' : screenType === 'tab' ? 'tabRoutes' : 'mainRoutes';
+    const mappingName = 'authRoutes';
     const mapRegex = new RegExp(`(export const ${mappingName} = \\{)([^}]*)(\\})`, 's');
     content = content.replace(mapRegex, (m, p1, p2, p3) => {
         const routeProp = `[routes.${section}.${routeKey}]`;
@@ -124,17 +123,9 @@ function updateRoutesFile(screenName: string, screenType: ScreenType): void {
 function updateNavigationFile(screenName: string, screenType: ScreenType): void {
     const routeKey = getRouteKey(screenName);
     const projectRoot = path.join(__dirname, '..', '..');
-    let navPath = '', mapping = '', prop = '';
-
-    if (screenType === 'auth') {
-        navPath = path.join(projectRoot, 'src', 'navigation', 'AuthStack.tsx');
-        mapping = 'authRoutes';
-        prop = `routes.auth.${routeKey}`;
-    } else {
-        navPath = path.join(projectRoot, 'src', 'navigation', screenType === 'tab' ? 'TabStack.tsx' : 'MainStack.tsx');
-        mapping = screenType === 'tab' ? 'tabRoutes' : 'mainRoutes';
-        prop = `routes.main.${routeKey}`;
-    }
+    const navPath = path.join(projectRoot, 'src', 'navigation', 'AuthStack.tsx');
+    const mapping = 'authRoutes';
+    const prop = `routes.auth.${routeKey}`;
 
     if (!fs.existsSync(navPath)) return;
     let content = fs.readFileSync(navPath, 'utf8');
@@ -165,7 +156,7 @@ function updateNavigationTypes(screenName: string, screenType: ScreenType): void
 
     let content = fs.readFileSync(typesPath, 'utf8');
     const componentName = toPascalCase(screenName);
-    const listName = screenType === 'auth' ? 'AuthStackParamList' : 'MainStackParamList';
+    const listName = 'AuthStackParamList';
 
     const listRegex = new RegExp(`(export type ${listName} = \\{)(.*?)(\\n};)`, 's');
     content = content.replace(listRegex, (m, p1, p2, p3) => {
@@ -185,19 +176,12 @@ function generateScreen(screenName: string, screenType: ScreenType): void {
     console.log(`\n🚀 Generating ${screenType} screen: ${screenName}\n`);
     const projectRoot = path.join(__dirname, '..', '..');
     const componentName = toPascalCase(screenName);
-    const subDir = screenType === 'auth' ? 'auth' : 'main';
-
-    let folder = '';
-    if (screenType === 'tab') folder = path.join(projectRoot, 'src', 'screens', 'main', 'TabScreens', componentName);
-    else folder = path.join(projectRoot, 'src', 'screens', subDir, componentName);
+    const folder = path.join(projectRoot, 'src', 'screens', 'auth', componentName);
 
     if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
 
     const indexPath = path.join(folder, `${componentName}.tsx`);
     if (!fs.existsSync(indexPath)) fs.writeFileSync(indexPath, generateScreenComponent(screenName), 'utf8');
-
-    const stylesPath = path.join(folder, 'styles.ts');
-    if (!fs.existsSync(stylesPath)) fs.writeFileSync(stylesPath, generateStylesContent(), 'utf8');
 
     updateScreensIndex(screenName, screenType);
     updateRoutesFile(screenName, screenType);
@@ -207,17 +191,13 @@ function generateScreen(screenName: string, screenType: ScreenType): void {
 }
 
 const args = process.argv.slice(2).filter((a) => a !== '--watch');
-if (args[0]) args[0].split(',').forEach(n => generateScreen(n.trim(), (args[1] || 'main') as ScreenType));
+if (args[0]) args[0].split(',').forEach(n => generateScreen(n.trim(), 'auth'));
 
 if (isWatchMode) {
     const projectRoot = path.join(__dirname, '..', '..');
     const authDir = path.join(projectRoot, 'src', 'screens', 'auth');
-    const mainDir = path.join(projectRoot, 'src', 'screens', 'main');
-    const tabDir = path.join(projectRoot, 'src', 'screens', 'main', 'TabScreens');
-    chokidar.watch([authDir, mainDir, tabDir], { ignoreInitial: true, depth: 1 }).on('addDir', (p) => {
+    chokidar.watch([authDir], { ignoreInitial: true, depth: 1 }).on('addDir', (p) => {
         const res = path.resolve(p), parent = path.dirname(res), name = path.basename(res);
         if (parent === authDir) generateScreen(toCamelCase(name), 'auth');
-        else if (parent === tabDir) generateScreen(toCamelCase(name), 'tab');
-        else if (parent === mainDir && name !== 'TabScreens') generateScreen(toCamelCase(name), 'main');
     });
 }

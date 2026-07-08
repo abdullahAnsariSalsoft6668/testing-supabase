@@ -11,6 +11,8 @@ export const STORAGE_KEYS = {
   LANGUAGE: 'language',
   THEME: 'theme',
   FCM_TOKEN: 'fcm_token',
+  REMEMBER_ME: 'remember_me',
+  REMEMBER_EMAIL: 'remember_email',
 } as const;
 
 export type StorageKeyType = keyof typeof STORAGE_KEYS;

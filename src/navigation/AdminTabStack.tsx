@@ -9,11 +9,11 @@ import { theme } from '@/styles/theme';
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 
 const ADMIN_TABS = [
-    { name: routes.admin.tab.dashboard, label: 'Home', icon: 'dashboard' as const, iconActive: 'dashboardActive' as const },
-    { name: routes.admin.tab.hospitals, label: 'Hospitals', icon: 'shop' as const, iconActive: 'shop' as const },
-    { name: routes.admin.tab.departments, label: 'Depts', icon: 'documentIcon' as const, iconActive: 'documentIcon' as const },
-    { name: routes.admin.tab.doctors, label: 'Doctors', icon: 'supportStore' as const, iconActive: 'supportStore' as const },
-    { name: routes.admin.tab.menu, label: 'Menu', icon: 'menu' as const, iconActive: 'menuActive' as const },
+    { name: routes.admin.tab.dashboard, label: 'Home', icon: 'healthTabHome' as const },
+    { name: routes.admin.tab.hospitals, label: 'Hospitals', icon: 'healthTabHospital' as const },
+    { name: routes.admin.tab.departments, label: 'Depts', icon: 'healthTabDepartments' as const },
+    { name: routes.admin.tab.doctors, label: 'Doctors', icon: 'healthTabDoctors' as const },
+    { name: routes.admin.tab.menu, label: 'Menu', icon: 'healthTabMenu' as const },
 ];
 
 export const AdminTabs = () => (

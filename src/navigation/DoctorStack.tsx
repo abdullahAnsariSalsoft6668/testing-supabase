@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
 
@@ -7,15 +7,28 @@ import * as Screens from '@/screens';
 import DoctorTabs from '@/navigation/DoctorTabStack';
 import { DoctorStackParamList } from '@/navigation/types';
 import type { AuthUserProfile } from '@/models/auth.types';
+import { syncAuthFromSupabase } from '@/redux/actions/auth';
 import { RootState } from '@/redux/store';
 import { theme } from '@/styles/theme';
+import type { DoctorStatus } from '@/types/database';
 
 const Stack = createNativeStackNavigator<DoctorStackParamList>();
+
+function resolveDoctorStatus(user: AuthUserProfile): DoctorStatus | undefined {
+    return user?.doctor_status ?? user?.doctor?.status;
+}
 
 export const DoctorStack = () => {
     const user = useSelector((s: RootState) => s.auth.userData) as AuthUserProfile;
 
-    if (!user?.doctor_id) {
+    useEffect(() => {
+        void syncAuthFromSupabase();
+    }, []);
+
+    const doctorStatus = resolveDoctorStatus(user);
+    const hasDoctorProfile = Boolean(user?.doctor_id ?? user?.doctor?.id);
+
+    if (!hasDoctorProfile) {
         return (
             <Stack.Navigator screenOptions={{ headerShown: false }} id={undefined}>
                 <Stack.Screen name={routes.auth.completeProfile} component={Screens.CompleteProfile} />
@@ -23,7 +36,7 @@ export const DoctorStack = () => {
         );
     }
 
-    if (user.doctor_status === 'PENDING') {
+    if (doctorStatus !== 'APPROVED') {
         return (
             <Stack.Navigator screenOptions={{ headerShown: false }} id={undefined}>
                 <Stack.Screen name={routes.doctor.pendingApproval} component={Screens.DoctorPendingApproval} />

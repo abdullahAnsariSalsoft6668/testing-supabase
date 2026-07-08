@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { AppointmentCard, EmptyState, HealthScreenHeader } from '@/components/health';
+import { AppointmentCard, AppointmentSkeleton, EmptyState, HealthScreenHeader } from '@/components/health';
 import routes from '@/constants/routes';
 import type { AuthUserProfile } from '@/models/auth.types';
 import { PatientStackParamList } from '@/navigation/types';
@@ -37,7 +37,7 @@ const PatientAppointments = () => {
             <HealthScreenHeader title="My Visits" subtitle="Track your appointments" />
             <ScrollView contentContainerStyle={[healthScreenStyles.body, healthScreenStyles.scrollContent]}>
                 {loading ? (
-                    <ActivityIndicator style={{ marginTop: 24 }} />
+                    <AppointmentSkeleton count={4} />
                 ) : appointments.length === 0 ? (
                     <EmptyState title="No appointments yet" />
                 ) : (

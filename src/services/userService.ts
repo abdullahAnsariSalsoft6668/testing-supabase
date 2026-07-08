@@ -29,28 +29,22 @@ export async function fetchFullProfile(userId: string): Promise<FullUserProfile 
     const user = await fetchUserById(userId);
     if (!user) return null;
 
-    let patient: Patient | null = null;
-    let doctor: Doctor | null = null;
+    const [{ data: patient }, { data: doctor }] = await Promise.all([
+        getSupabase().from('patients').select('*').eq('user_id', userId).maybeSingle(),
+        getSupabase().from('doctors').select('*').eq('user_id', userId).maybeSingle(),
+    ]);
 
-    if (user.role === 'PATIENT') {
-        const { data } = await getSupabase().from('patients').select('*').eq('user_id', userId).maybeSingle();
-        patient = data;
-    } else if (user.role === 'DOCTOR') {
-        const { data } = await getSupabase()
-            .from('doctors')
-            .select('*, hospitals(*), departments(*)')
-            .eq('user_id', userId)
-            .maybeSingle();
-        doctor = data;
-    }
+    const effectiveRole: UserRole =
+        user.role === 'ADMIN' ? 'ADMIN' : doctor ? 'DOCTOR' : patient ? 'PATIENT' : user.role;
 
     const profileComplete =
-        user.role === 'ADMIN' ||
-        (user.role === 'PATIENT' && !!patient) ||
-        (user.role === 'DOCTOR' && !!doctor);
+        effectiveRole === 'ADMIN' ||
+        (effectiveRole === 'PATIENT' && !!patient) ||
+        (effectiveRole === 'DOCTOR' && !!doctor);
 
     return {
         ...user,
+        role: effectiveRole,
         patient_id: patient?.id,
         patient,
         doctor_id: doctor?.id,

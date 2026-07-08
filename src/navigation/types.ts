@@ -31,6 +31,7 @@ export type PatientStackParamList = PatientTabParamList & {
     DoctorDetail: { doctorId: string };
     BookAppointment: { doctorId: string; doctorName: string };
     AppointmentDetail: { appointmentId: string };
+    CompleteProfile: undefined;
 };
 
 export type DoctorTabParamList = {
@@ -62,6 +63,3 @@ export type AdminStackParamList = AdminTabParamList & {
     DepartmentForm: { departmentId?: string; hospitalId?: string } | undefined;
     DoctorDetailAdmin: { doctorId: string };
 };
-
-/** @deprecated Legacy grocery stack types */
-export type MainStackParamList = Record<string, object | undefined>;
