@@ -71,7 +71,9 @@ export async function listApprovedDoctors(filters?: { hospitalId?: string; depar
 }
 
 export async function listDoctorsByStatus(status?: DoctorStatus) {
-    let query = getSupabase().from('doctors').select('*');
+    let query = getSupabase()
+        .from('doctors')
+        .select('*, users(*), hospitals(*), departments(*)');
     if (status) query = query.eq('status', status);
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;

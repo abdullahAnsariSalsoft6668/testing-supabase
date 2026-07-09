@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
-
 import routes from '@/constants/routes';
 import * as Screens from '@/screens';
 import PatientTabs from '@/navigation/PatientTabStack';

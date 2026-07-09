@@ -3,7 +3,6 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
 
-import routes from '@/constants/routes';
 import type { AuthUserProfile } from '@/models/auth.types';
 import AuthStack from '@/navigation/AuthStack';
 import { AdminStack } from '@/navigation/AdminStack';

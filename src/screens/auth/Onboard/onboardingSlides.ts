@@ -1,31 +1,30 @@
-import { ImageSourcePropType } from 'react-native';
-
-import { localImages } from '@/assets/images';
-
 export type OnboardingSlide = {
     id: string;
-    image: ImageSourcePropType;
+    role: 'patient' | 'doctor' | 'admin';
     title: string;
     description: string;
 };
 
 export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     {
-        id: '1',
-        image: localImages.onboarding1,
-        title: 'Save Up To 3x More',
-        description: 'Find the best discounts across multiple supermarkets in one place.',
+        id: 'patient',
+        role: 'patient',
+        title: 'Book Appointments Easily',
+        description:
+            'Search hospitals, find specialists, and schedule your next visit in just a few taps.',
     },
     {
-        id: '2',
-        image: localImages.onboarding2,
-        title: 'Discounts Stack Automatically',
-        description: 'We find and combine every eligible deal so you never miss savings.',
+        id: 'doctor',
+        role: 'doctor',
+        title: 'Manage Your Practice',
+        description:
+            'Set availability, review appointments, and confirm patient visits from one dashboard.',
     },
     {
-        id: '3',
-        image: localImages.onboarding3,
-        title: 'Checkout In Seconds',
-        description: 'Show your barcode at checkout and watch the savings apply instantly.',
+        id: 'admin',
+        role: 'admin',
+        title: 'Run Your Hospital',
+        description:
+            'Manage hospitals, departments, and doctor approvals with full admin control.',
     },
 ];

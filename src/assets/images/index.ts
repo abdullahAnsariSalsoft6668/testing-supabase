@@ -9,6 +9,10 @@ export type LocalImages = {
     banner: ImageSourcePropType;
     basketball: ImageSourcePropType;
     bg: ImageSourcePropType;
+    doctor1: ImageSourcePropType;
+    doctor2: ImageSourcePropType;
+    doctor3: ImageSourcePropType;
+    doctor4: ImageSourcePropType;
     football: ImageSourcePropType;
     homeBg: ImageSourcePropType;
     logo: ImageSourcePropType;
@@ -30,6 +34,10 @@ export const localImages: LocalImages = {
     banner: require('./banner.png'),
     basketball: require('./basketball.png'),
     bg: require('./bg.png'),
+    doctor1: require('./doctor-1.png'),
+    doctor2: require('./doctor-2.png'),
+    doctor3: require('./doctor-3.png'),
+    doctor4: require('./doctor-4.png'),
     football: require('./football.png'),
     homeBg: require('./home-bg.png'),
     logo: require('./logo.png'),

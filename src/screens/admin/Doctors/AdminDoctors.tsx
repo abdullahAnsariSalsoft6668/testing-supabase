@@ -1,35 +1,84 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-// ActivityIndicator still used for action buttons (approve/reject spinners)
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Toast from 'react-native-toast-message';
 
+import { AdminFilterChips } from '@/components/admin/AdminUI';
 import { CardListSkeleton, EmptyState, HealthScreenHeader, StatusBadge } from '@/components/health';
 import MyIcons from '@/components/MyIcons';
 import TextComp from '@/components/TextComp';
 import routes from '@/constants/routes';
 import { AdminStackParamList } from '@/navigation/types';
 import { listDoctorsByStatus, updateDoctorStatus } from '@/services/doctorService';
+import { adminScreenStyles as s } from '@/styles/adminScreenStyles';
+import { doctorStatusStyles } from '@/styles/healthStatus';
 import { moderateScale } from '@/styles/scaling';
 import { theme } from '@/styles/theme';
 import { formatErrorMessage } from '@/utils/formatError';
+import { getDoctorImageSource } from '@/utils/doctorImage';
 import { getUserDisplayName } from '@/utils/userDisplay';
 import type { Doctor, DoctorStatus } from '@/types/database';
 
-const FILTERS: DoctorStatus[] = ['PENDING', 'APPROVED', 'REJECTED'];
+type DoctorFilter = 'ALL' | DoctorStatus;
+
+const FILTER_TABS = [
+    {
+        key: 'ALL' as DoctorFilter,
+        label: 'All',
+        icon: 'healthTabDoctors' as const,
+        accent: theme.palette.teal.main,
+        surface: theme.palette.teal.surface,
+    },
+    {
+        key: 'PENDING' as DoctorFilter,
+        label: 'Pending',
+        icon: 'healthTabCalendar' as const,
+        accent: theme.palette.status.pending,
+        surface: '#FFF4E6',
+    },
+    {
+        key: 'APPROVED' as DoctorFilter,
+        label: 'Approved',
+        icon: 'greenCircleCheck' as const,
+        accent: theme.palette.teal.main,
+        surface: theme.palette.teal.surface,
+    },
+    {
+        key: 'SUSPENDED' as DoctorFilter,
+        label: 'Suspended',
+        icon: 'tabClock' as const,
+        accent: theme.palette.status.noShow,
+        surface: theme.palette.neutral.gray100,
+    },
+    {
+        key: 'REJECTED' as DoctorFilter,
+        label: 'Rejected',
+        icon: 'healthTabClose' as const,
+        accent: theme.palette.status.error,
+        surface: '#FFE3E3',
+    },
+];
+
+const FILTER_LABELS: Record<DoctorFilter, string> = {
+    ALL: 'all',
+    PENDING: 'pending',
+    APPROVED: 'approved',
+    SUSPENDED: 'suspended',
+    REJECTED: 'rejected',
+};
 
 const AdminDoctors = () => {
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<DoctorStatus>('PENDING');
+    const [filter, setFilter] = useState<DoctorFilter>('PENDING');
     const [actingId, setActingId] = useState<string | null>(null);
     const hasFetchedRef = useRef(false);
 
-    const load = useCallback((status: DoctorStatus) => {
+    const load = useCallback((statusFilter: DoctorFilter) => {
         if (!hasFetchedRef.current) setLoading(true);
-        listDoctorsByStatus(status)
+        listDoctorsByStatus(statusFilter === 'ALL' ? undefined : statusFilter)
             .then(setDoctors)
             .catch((e) => {
                 setDoctors([]);
@@ -43,9 +92,9 @@ const AdminDoctors = () => {
 
     useFocusEffect(useCallback(() => { load(filter); }, [filter, load]));
 
-    const changeFilter = (s: DoctorStatus) => {
+    const changeFilter = (status: DoctorFilter) => {
         hasFetchedRef.current = false;
-        setFilter(s);
+        setFilter(status);
     };
 
     const setStatus = async (id: string, status: 'APPROVED' | 'REJECTED' | 'SUSPENDED') => {
@@ -61,108 +110,106 @@ const AdminDoctors = () => {
         }
     };
 
-    const initials = (name: string) =>
-        name.split(' ').slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
-
-    const FilterTabs = (
-        <View style={styles.filterRow}>
-            {FILTERS.map((s) => (
-                <Pressable
-                    key={s}
-                    style={[styles.filterTab, filter === s && styles.filterTabActive]}
-                    onPress={() => changeFilter(s)}
-                >
-                    <TextComp
-                        text={s.charAt(0) + s.slice(1).toLowerCase()}
-                        style={[styles.filterTabText, filter === s && styles.filterTabTextActive]}
-                    />
-                </Pressable>
-            ))}
-        </View>
-    );
-
     return (
-        <View style={styles.screen}>
-            <HealthScreenHeader title="Doctors" subtitle="Review and approve registrations">
-                {FilterTabs}
-            </HealthScreenHeader>
+        <View style={s.screen}>
+            <HealthScreenHeader title="Doctors" subtitle="Review and manage registrations" />
 
-            <ScrollView
-                contentContainerStyle={styles.body}
-                showsVerticalScrollIndicator={false}
-            >
+            <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+                <AdminFilterChips tabs={FILTER_TABS} active={filter} onChange={changeFilter} />
+
+                {!loading && doctors.length > 0 ? (
+                    <View style={styles.resultBar}>
+                        <TextComp
+                            text={`${doctors.length} ${FILTER_LABELS[filter]} doctor${doctors.length === 1 ? '' : 's'}`}
+                            style={styles.resultText}
+                        />
+                    </View>
+                ) : null}
+
                 {loading ? (
                     <CardListSkeleton count={4} />
                 ) : doctors.length === 0 ? (
                     <EmptyState
-                        title={`No ${filter.toLowerCase()} doctors`}
-                        message="All doctors in this category will appear here."
+                        title={`No ${FILTER_LABELS[filter]} doctors`}
+                        message="Doctors matching this filter will appear here."
                     />
                 ) : (
                     doctors.map((d) => {
                         const name = getUserDisplayName(d.users, d.specialization || 'Doctor');
+                        const statusStyle = doctorStatusStyles[d.status];
+
                         return (
                             <Pressable
                                 key={d.id}
-                                style={styles.card}
+                                style={[styles.doctorCard, { borderLeftColor: statusStyle.text }]}
                                 onPress={() =>
                                     navigation.navigate(routes.admin.doctorDetailAdmin, { doctorId: d.id })
                                 }
                             >
-                                {/* Card header */}
-                                <View style={styles.cardHeader}>
-                                    <View style={styles.avatar}>
-                                        <TextComp text={initials(name)} style={styles.avatarText} />
-                                    </View>
+                                <View style={styles.cardTop}>
+                                    <Image
+                                        source={getDoctorImageSource(d.id, d.users?.profile_image)}
+                                        style={styles.doctorImage}
+                                        resizeMode="cover"
+                                    />
                                     <View style={styles.cardInfo}>
-                                        <View style={styles.nameRow}>
-                                            <TextComp text={name} style={styles.cardTitle} numberOfLines={1} />
-                                            <StatusBadge status={d.status} type="doctor" />
-                                        </View>
+                                        <TextComp text={name} style={s.cardTitle} numberOfLines={1} />
                                         {d.specialization ? (
                                             <TextComp text={d.specialization} style={styles.specText} />
                                         ) : null}
-                                        {d.qualification ? (
-                                            <View style={styles.metaRow}>
-                                                <MyIcons name="licenseIcon" size={12} stroke={theme.colors.text.secondary} />
-                                                <TextComp text={d.qualification} style={styles.cardMeta} />
-                                            </View>
-                                        ) : null}
-                                        {d.hospitals?.name ? (
-                                            <View style={styles.metaRow}>
-                                                <MyIcons name="healthTabHospital" size={12} stroke={theme.colors.text.secondary} />
-                                                <TextComp text={d.hospitals.name} style={styles.cardMeta} />
-                                            </View>
-                                        ) : null}
+                                        <View style={styles.statusRow}>
+                                            <StatusBadge status={d.status} type="doctor" />
+                                        </View>
                                     </View>
+                                    <MyIcons name="rightChevron" size={16} stroke={theme.colors.text.muted} />
                                 </View>
 
-                                {/* Actions for PENDING */}
+                                <View style={styles.metaBlock}>
+                                    {d.qualification ? (
+                                        <View style={styles.metaRow}>
+                                            <MyIcons name="licenseIcon" size={12} stroke={theme.colors.text.secondary} />
+                                            <TextComp text={d.qualification} style={styles.metaText} numberOfLines={1} />
+                                        </View>
+                                    ) : null}
+                                    {d.hospitals?.name ? (
+                                        <View style={styles.metaRow}>
+                                            <MyIcons name="healthTabHospital" size={12} stroke={theme.colors.text.secondary} />
+                                            <TextComp text={d.hospitals.name} style={styles.metaText} numberOfLines={1} />
+                                        </View>
+                                    ) : null}
+                                    {d.departments?.name ? (
+                                        <View style={styles.metaRow}>
+                                            <MyIcons name="healthTabDepartments" size={12} stroke={theme.colors.text.secondary} />
+                                            <TextComp text={d.departments.name} style={styles.metaText} numberOfLines={1} />
+                                        </View>
+                                    ) : null}
+                                </View>
+
                                 {d.status === 'PENDING' ? (
                                     <>
-                                        <View style={styles.divider} />
-                                        <View style={styles.actions}>
+                                        <View style={s.divider} />
+                                        <View style={s.actions}>
                                             <Pressable
-                                                style={[styles.actionBtn, styles.approveBtn]}
+                                                style={[s.actionBtn, s.approveBtn]}
                                                 onPress={() => setStatus(d.id, 'APPROVED')}
                                                 disabled={actingId === d.id}
                                             >
                                                 {actingId === d.id ? (
-                                                    <ActivityIndicator size="small" color="#fff" />
+                                                    <ActivityIndicator size="small" color={theme.colors.text.inverse} />
                                                 ) : (
                                                     <>
-                                                        <MyIcons name="checkVerified" size={14} stroke="#fff" />
-                                                        <TextComp text="Approve" style={styles.approveBtnText} />
+                                                        <MyIcons name="greenCircleCheck" size={14} stroke={theme.colors.text.inverse} />
+                                                        <TextComp text="Approve" style={s.approveBtnText} />
                                                     </>
                                                 )}
                                             </Pressable>
                                             <Pressable
-                                                style={[styles.actionBtn, styles.rejectBtn]}
+                                                style={[s.actionBtn, s.rejectBtn]}
                                                 onPress={() => setStatus(d.id, 'REJECTED')}
                                                 disabled={actingId === d.id}
                                             >
-                                                <MyIcons name="close" size={13} stroke={theme.palette.status.error} />
-                                                <TextComp text="Reject" style={styles.rejectBtnText} />
+                                                <MyIcons name="healthTabClose" size={13} stroke={theme.palette.status.error} />
+                                                <TextComp text="Reject" style={s.rejectBtnText} />
                                             </Pressable>
                                         </View>
                                     </>
@@ -177,120 +224,70 @@ const AdminDoctors = () => {
 };
 
 const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: theme.colors.background.secondary },
     body: {
         paddingHorizontal: moderateScale(16),
         paddingTop: moderateScale(16),
         paddingBottom: moderateScale(120),
+        gap: moderateScale(12),
     },
-
-    /* Filter tabs in header */
-    filterRow: {
-        flexDirection: 'row',
-        gap: moderateScale(8),
+    resultBar: {
+        paddingVertical: moderateScale(4),
     },
-    filterTab: {
-        paddingHorizontal: moderateScale(14),
-        paddingVertical: moderateScale(7),
-        borderRadius: moderateScale(20),
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.25)',
-    },
-    filterTabActive: {
-        backgroundColor: theme.palette.neutral.white,
-    },
-    filterTabText: {
+    resultText: {
         fontSize: moderateScale(12),
         fontWeight: '600',
-        color: 'rgba(255,255,255,0.85)',
+        color: theme.colors.text.secondary,
+        textTransform: 'uppercase',
+        letterSpacing: 0.4,
     },
-    filterTabTextActive: {
-        color: theme.palette.teal.main,
-    },
-
-    /* Doctor card */
-    card: {
+    doctorCard: {
         backgroundColor: theme.colors.card.background,
         borderRadius: theme.radius.card,
-        marginBottom: moderateScale(12),
         borderWidth: 1,
         borderColor: theme.colors.border.default,
+        borderLeftWidth: 4,
         overflow: 'hidden',
         ...theme.shadows.card,
     },
-    cardHeader: {
+    cardTop: {
         flexDirection: 'row',
-        padding: moderateScale(16),
+        alignItems: 'flex-start',
+        padding: moderateScale(14),
         gap: moderateScale(12),
     },
-    avatar: {
-        width: moderateScale(48),
-        height: moderateScale(48),
-        borderRadius: moderateScale(24),
+    doctorImage: {
+        width: moderateScale(52),
+        height: moderateScale(52),
+        borderRadius: moderateScale(26),
         backgroundColor: theme.palette.teal.surface,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
+        borderWidth: 2,
+        borderColor: theme.palette.teal.main + '33',
     },
-    avatarText: {
-        fontSize: moderateScale(16),
-        fontWeight: '700',
-        color: theme.palette.teal.main,
-    },
-    cardInfo: { flex: 1 },
-    nameRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: 6,
-    },
-    cardTitle: {
-        fontSize: moderateScale(15),
-        fontWeight: '700',
-        color: theme.colors.text.primary,
-        flex: 1,
-    },
+    cardInfo: { flex: 1, gap: moderateScale(4) },
     specText: {
         fontSize: moderateScale(13),
         color: theme.palette.teal.main,
         fontWeight: '500',
-        marginTop: moderateScale(2),
+    },
+    statusRow: {
+        marginTop: moderateScale(4),
+        alignSelf: 'flex-start',
+    },
+    metaBlock: {
+        paddingHorizontal: moderateScale(14),
+        paddingBottom: moderateScale(14),
+        gap: moderateScale(6),
     },
     metaRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: moderateScale(5),
-        marginTop: moderateScale(4),
+        gap: moderateScale(6),
     },
-    cardMeta: {
+    metaText: {
+        flex: 1,
         fontSize: moderateScale(12),
         color: theme.colors.text.secondary,
-        flex: 1,
     },
-
-    /* Divider */
-    divider: { height: 1, backgroundColor: theme.colors.border.default, marginHorizontal: moderateScale(16) },
-
-    /* Action buttons */
-    actions: {
-        flexDirection: 'row',
-        padding: moderateScale(12),
-        gap: moderateScale(10),
-    },
-    actionBtn: {
-        flex: 1,
-        flexDirection: 'row',
-        paddingVertical: moderateScale(10),
-        borderRadius: moderateScale(10),
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: moderateScale(5),
-    },
-    approveBtn: { backgroundColor: theme.palette.teal.main },
-    approveBtnText: { color: '#fff', fontWeight: '700', fontSize: moderateScale(13) },
-    rejectBtn: { backgroundColor: '#FFF1F0', borderWidth: 1, borderColor: '#FFCCC7' },
-    rejectBtnText: { color: theme.palette.status.error, fontWeight: '600', fontSize: moderateScale(13) },
 });
 
 export default AdminDoctors;

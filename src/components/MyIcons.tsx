@@ -49,6 +49,7 @@ import Fire from '@/assets/icons/fire.svg';
 import GoodFeedback from '@/assets/icons/good-feedback.svg';
 import GreenCircleCheck from '@/assets/icons/green-circle-check.svg';
 import HealthTabCalendar from '@/assets/icons/health-tab-calendar.svg';
+import HealthTabClose from '@/assets/icons/health-tab-close.svg';
 import HealthTabDepartments from '@/assets/icons/health-tab-departments.svg';
 import HealthTabDoctors from '@/assets/icons/health-tab-doctors.svg';
 import HealthTabFile from '@/assets/icons/health-tab-file.svg';
@@ -152,6 +153,7 @@ export type IconName =
   | 'goodFeedback'
   | 'greenCircleCheck'
   | 'healthTabCalendar'
+  | 'healthTabClose'
   | 'healthTabDepartments'
   | 'healthTabDoctors'
   | 'healthTabFile'
@@ -257,6 +259,7 @@ const iconMap: Record<IconName, IconComponent> = {
   goodFeedback: GoodFeedback,
   greenCircleCheck: GreenCircleCheck,
   healthTabCalendar: HealthTabCalendar,
+  healthTabClose: HealthTabClose,
   healthTabDepartments: HealthTabDepartments,
   healthTabDoctors: HealthTabDoctors,
   healthTabFile: HealthTabFile,

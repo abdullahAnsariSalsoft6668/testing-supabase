@@ -13,7 +13,7 @@ const OnboardingProgressBars: React.FC<OnboardingProgressBarsProps> = ({ activeI
         {ONBOARDING_SLIDES.map((slide, index) => (
             <View
                 key={slide.id}
-                style={[styles.progressBar, index === activeIndex && styles.progressBarActive]}
+                style={[styles.progressDot, index === activeIndex && styles.progressDotActive]}
             />
         ))}
     </View>

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { View } from 'react-native';
 import Animated, {
     Easing,
     useAnimatedStyle,
@@ -8,35 +9,37 @@ import Animated, {
 
 import TextComp from '@/components/TextComp';
 
+import { ROLE_COLORS, type OnboardingRole } from './onboardingRoleColors';
 import styles from './styles';
 
 type OnboardingTextBlockProps = {
     slideKey: string;
+    role: OnboardingRole;
     title: string;
     description: string;
     titleSize: number;
     titleLineHeight: number;
     descriptionSize: number;
-    descriptionLineHeight: number;
 };
 
 const OnboardingTextBlock: React.FC<OnboardingTextBlockProps> = ({
     slideKey,
+    role,
     title,
     description,
     titleSize,
     titleLineHeight,
     descriptionSize,
-    descriptionLineHeight,
 }) => {
+    const colors = ROLE_COLORS[role];
     const opacity = useSharedValue(0);
-    const translateY = useSharedValue(14);
+    const translateY = useSharedValue(16);
 
     useEffect(() => {
         opacity.value = 0;
-        translateY.value = 14;
-        opacity.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.ease) });
-        translateY.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.ease) });
+        translateY.value = 16;
+        opacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.ease) });
+        translateY.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.ease) });
     }, [slideKey, opacity, translateY]);
 
     const animatedStyle = useAnimatedStyle(() => ({
@@ -45,20 +48,25 @@ const OnboardingTextBlock: React.FC<OnboardingTextBlockProps> = ({
     }));
 
     return (
-        <Animated.View style={animatedStyle}>
+        <Animated.View style={[styles.textBlock, animatedStyle]}>
+            <View
+                style={[
+                    styles.rolePill,
+                    { backgroundColor: colors.accent + '14' },
+                ]}
+            >
+                <TextComp
+                    text={colors.label}
+                    style={[styles.rolePillText, { color: colors.accent }]}
+                />
+            </View>
             <TextComp
                 text={title}
-                style={[
-                    styles.title,
-                    { fontSize: titleSize, lineHeight: titleLineHeight },
-                ]}
+                style={[styles.title, { fontSize: titleSize, lineHeight: titleLineHeight }]}
             />
             <TextComp
                 text={description}
-                style={[
-                    styles.description,
-                    { fontSize: descriptionSize, lineHeight: descriptionLineHeight },
-                ]}
+                style={[styles.description, { fontSize: descriptionSize }]}
             />
         </Animated.View>
     );

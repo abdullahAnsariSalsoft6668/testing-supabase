@@ -1,7 +1,8 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import TextComp from '@/components/TextComp';
+import { getDoctorImageSource } from '@/utils/doctorImage';
 import { theme } from '@/styles/theme';
 import { moderateScale } from '@/styles/scaling';
 import { getUserDisplayName } from '@/utils/userDisplay';
@@ -19,9 +20,11 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onPress }) => {
 
     return (
         <Pressable style={styles.card} onPress={onPress}>
-            <View style={styles.avatar}>
-                <TextComp text={name.charAt(0).toUpperCase()} style={styles.avatarText} />
-            </View>
+            <Image
+                source={getDoctorImageSource(doctor.id, doctor.users?.profile_image)}
+                style={styles.avatar}
+                resizeMode="cover"
+            />
             <View style={styles.info}>
                 <TextComp text={name} style={styles.name} />
                 <TextComp text={doctor.specialization} style={styles.spec} />
@@ -46,15 +49,14 @@ const styles = StyleSheet.create({
         ...theme.shadows.card,
     },
     avatar: {
-        width: moderateScale(48),
-        height: moderateScale(48),
-        borderRadius: moderateScale(24),
+        width: moderateScale(52),
+        height: moderateScale(52),
+        borderRadius: moderateScale(26),
         backgroundColor: theme.palette.teal.surface,
-        alignItems: 'center',
-        justifyContent: 'center',
         marginRight: moderateScale(12),
+        borderWidth: 2,
+        borderColor: theme.palette.teal.main + '33',
     },
-    avatarText: { fontSize: moderateScale(18), fontWeight: '700', color: theme.palette.teal.main },
     info: { flex: 1 },
     name: { fontSize: moderateScale(15), fontWeight: '700', color: theme.colors.text.primary },
     spec: { fontSize: moderateScale(13), color: theme.palette.teal.main, marginTop: 2 },
