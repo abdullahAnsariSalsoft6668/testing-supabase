@@ -146,6 +146,37 @@ const PatientHome = () => {
                 contentContainerStyle={styles.body}
                 showsVerticalScrollIndicator={false}
             >
+                {/* AI Assistant — primary entry */}
+                <Pressable
+                    style={styles.aiCard}
+                    onPress={() => navigation.navigate(routes.patient.aiAssistantHub)}
+                >
+                    <LinearGradient
+                        colors={[theme.palette.teal.dark, theme.palette.teal.main]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.aiGradient}
+                    >
+                        <View style={styles.aiIcon}>
+                            <MyIcons name="healthTabUser" size={26} stroke={theme.colors.text.inverse} />
+                        </View>
+                        <View style={styles.aiText}>
+                            <TextComp text="AI Health Assistant" style={styles.aiTitle} />
+                            <TextComp text="Book by chat or voice call" style={styles.aiSub} />
+                        </View>
+                        <View style={styles.aiActions}>
+                            <View style={styles.aiPill}>
+                                <MyIcons name="healthTabFile" size={12} stroke={theme.colors.text.inverse} />
+                                <TextComp text="Chat" style={styles.aiPillText} />
+                            </View>
+                            <View style={styles.aiPill}>
+                                <MyIcons name="callBlue" size={12} stroke={theme.colors.text.inverse} />
+                                <TextComp text="Call" style={styles.aiPillText} />
+                            </View>
+                        </View>
+                    </LinearGradient>
+                </Pressable>
+
                 {/* Quick actions */}
                 <View style={styles.actionsRow}>
                     {QUICK_ACTIONS.map((a) => (
@@ -296,6 +327,59 @@ const styles = StyleSheet.create({
         paddingTop: moderateScale(20),
         paddingBottom: moderateScale(120),
         gap: moderateScale(0),
+    },
+
+    /* AI assistant card */
+    aiCard: {
+        marginBottom: moderateScale(20),
+        borderRadius: moderateScale(16),
+        overflow: 'hidden',
+        ...theme.shadows.card,
+    },
+    aiGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: moderateScale(12),
+        padding: moderateScale(16),
+    },
+    aiIcon: {
+        width: moderateScale(52),
+        height: moderateScale(52),
+        borderRadius: moderateScale(26),
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    aiText: { flex: 1, minWidth: moderateScale(140) },
+    aiTitle: {
+        fontSize: moderateScale(17),
+        fontWeight: '800',
+        color: theme.colors.text.inverse,
+    },
+    aiSub: {
+        fontSize: moderateScale(12),
+        color: 'rgba(255,255,255,0.85)',
+        marginTop: moderateScale(4),
+    },
+    aiActions: {
+        flexDirection: 'row',
+        gap: moderateScale(8),
+        width: '100%',
+    },
+    aiPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: moderateScale(5),
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: moderateScale(10),
+        paddingVertical: moderateScale(6),
+        borderRadius: moderateScale(20),
+    },
+    aiPillText: {
+        fontSize: moderateScale(11),
+        fontWeight: '700',
+        color: theme.colors.text.inverse,
     },
 
     /* Quick actions */

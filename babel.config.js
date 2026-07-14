@@ -7,7 +7,12 @@ module.exports = {
       {
         moduleName: '@env',
         path: '.env',
-        allowlist: ['EXPO_PUBLIC_SUPABASE_URL', 'EXPO_PUBLIC_SUPABASE_KEY'],
+        allowlist: [
+          'EXPO_PUBLIC_SUPABASE_URL',
+          'EXPO_PUBLIC_SUPABASE_KEY',
+          'EXPO_PUBLIC_AI_API_BASE_URL',
+          'EXPO_PUBLIC_NODE_API_BASE_URL',
+        ],
       },
     ],
     [

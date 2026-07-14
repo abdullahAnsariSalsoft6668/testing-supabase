@@ -24,6 +24,9 @@ const routes = {
         doctorDetail: 'DoctorDetail',
         bookAppointment: 'BookAppointment',
         appointmentDetail: 'AppointmentDetail',
+        aiAssistantHub: 'AiAssistantHub',
+        aiChat: 'AiChat',
+        aiVoiceCall: 'AiVoiceCall',
     },
     doctor: {
         tab: {

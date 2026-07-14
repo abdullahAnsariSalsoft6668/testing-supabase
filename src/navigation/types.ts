@@ -31,6 +31,9 @@ export type PatientStackParamList = PatientTabParamList & {
     DoctorDetail: { doctorId: string };
     BookAppointment: { doctorId: string; doctorName: string };
     AppointmentDetail: { appointmentId: string };
+    AiAssistantHub: undefined;
+    AiChat: undefined;
+    AiVoiceCall: undefined;
     CompleteProfile: undefined;
 };
 

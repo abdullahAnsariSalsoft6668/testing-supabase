@@ -40,6 +40,9 @@ export const PatientStack = () => {
             <Stack.Screen name={routes.patient.doctorDetail} component={Screens.DoctorDetail} />
             <Stack.Screen name={routes.patient.bookAppointment} component={Screens.BookAppointment} />
             <Stack.Screen name={routes.patient.appointmentDetail} component={Screens.AppointmentDetail} />
+            <Stack.Screen name={routes.patient.aiAssistantHub} component={Screens.AiAssistantHub} />
+            <Stack.Screen name={routes.patient.aiChat} component={Screens.AiChatScreen} />
+            <Stack.Screen name={routes.patient.aiVoiceCall} component={Screens.AiVoiceCallScreen} />
         </Stack.Navigator>
     );
 };

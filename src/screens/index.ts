@@ -18,6 +18,9 @@ export { default as PatientAppointments } from './patient/Appointments/PatientAp
 export { default as AppointmentDetail } from './patient/Appointments/AppointmentDetail';
 export { default as PatientReports } from './patient/Reports/PatientReports';
 export { default as PatientProfile } from './patient/Profile/PatientProfile';
+export { default as AiAssistantHub } from './patient/AiAssistant/AiAssistantHub';
+export { default as AiChatScreen } from './patient/AiAssistant/AiChatScreen';
+export { default as AiVoiceCallScreen } from './patient/AiAssistant/AiVoiceCallScreen';
 
 // Doctor
 export { default as DoctorDashboard } from './doctor/Dashboard/DoctorDashboard';

@@ -3,6 +3,9 @@
  */
 
 import 'react-native-url-polyfill/auto';
+import { registerGlobals } from '@livekit/react-native';
+
+registerGlobals();
 
 import { AppRegistry } from 'react-native';
 import App from './App';

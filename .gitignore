@@ -38,6 +38,15 @@ local.properties
 # Environment
 .env
 .env.local
+api/.env
+api/.venv/
+nodejsbackend/.env
+nodejsbackend/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
 
 # node.js
 #
