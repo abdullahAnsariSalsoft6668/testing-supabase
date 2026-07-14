@@ -18,6 +18,15 @@ const AiAssistantHub = () => {
 
     const options = [
         {
+            key: 'voice',
+            title: 'Talk to AI',
+            subtitle: 'Voice call — speak to book appointments',
+            icon: 'callBlue' as const,
+            route: routes.patient.aiVoiceCall,
+            accent: theme.palette.sky.accent,
+            surface: theme.palette.sky.main,
+        },
+        {
             key: 'chat',
             title: 'Chat with AI',
             subtitle: 'Type to book appointments and ask questions',
@@ -25,15 +34,6 @@ const AiAssistantHub = () => {
             route: routes.patient.aiChat,
             accent: theme.palette.teal.main,
             surface: theme.palette.teal.surface,
-        },
-        {
-            key: 'voice',
-            title: 'Voice Call',
-            subtitle: 'Talk to your AI health assistant like a call',
-            icon: 'callBlue' as const,
-            route: routes.patient.aiVoiceCall,
-            accent: theme.palette.sky.accent,
-            surface: theme.palette.sky.main,
         },
     ];
 

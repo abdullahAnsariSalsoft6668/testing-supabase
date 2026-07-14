@@ -1,5 +1,4 @@
 import { Router, type Request, type Response } from 'express';
-import { config } from '../config';
 import { createVoiceSession } from '../services/voiceSession';
 import { verifyAccessToken } from '../services/supabase';
 
@@ -11,8 +10,8 @@ function bearerToken(req: Request): string | null {
   return header.slice(7).trim() || null;
 }
 
-/** @deprecated Use POST /voice/session */
-router.post('/web', async (req: Request, res: Response) => {
+/** POST /voice/session — create Retell web call token for React Native WebRTC */
+router.post('/session', async (req: Request, res: Response) => {
   try {
     const token = bearerToken(req);
     if (!token) {
@@ -29,20 +28,13 @@ router.post('/web', async (req: Request, res: Response) => {
     }
 
     const session = await createVoiceSession({ patientId, firstName });
+
     return res.json(session);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to create web call';
+    const message = err instanceof Error ? err.message : 'Failed to create voice session';
     const status = message.includes('not configured') ? 503 : 500;
     return res.status(status).json({ error: message });
   }
-});
-
-router.get('/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    retellConfigured: Boolean(config.retellApiKey && config.retellAgentId),
-    supabaseConfigured: Boolean(config.supabaseUrl && config.supabaseKey),
-  });
 });
 
 export default router;

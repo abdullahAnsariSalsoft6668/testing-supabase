@@ -30,7 +30,8 @@ npm run dev
 ```
 
 - Health: `http://localhost:3001/health`
-- Create web call: `POST /calls/web`
+- Create voice session: `POST /voice/session`
+- Legacy: `POST /calls/web` (same handler)
 - Retell tools: `POST /retell/tools/*`
 
 ## Retell dashboard — Custom Functions
@@ -67,7 +68,17 @@ Keep responses short for voice.
 
 ## Mobile (React Native — native voice)
 
-The app uses **LiveKit native SDK** (not WebView) to connect to Retell's room with the access token from `POST /calls/web`.
+The app uses **LiveKit native SDK** (WebRTC) to connect to Retell's voice server with the access token from `POST /voice/session`.
+
+```
+React Native (Talk to AI)
+        → POST /voice/session
+        → Node.js + Retell SDK
+        → access token
+        → WebRTC (LiveKit) → Retell Voice Server
+        → LLM + function calling
+        → POST /retell/tools/* → Supabase
+```
 
 Root `.env`:
 ```env

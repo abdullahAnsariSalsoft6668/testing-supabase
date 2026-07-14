@@ -171,7 +171,7 @@ const PatientHome = () => {
                             </View>
                             <View style={styles.aiPill}>
                                 <MyIcons name="callBlue" size={12} stroke={theme.colors.text.inverse} />
-                                <TextComp text="Call" style={styles.aiPillText} />
+                                <TextComp text="Talk to AI" style={styles.aiPillText} />
                             </View>
                         </View>
                     </LinearGradient>

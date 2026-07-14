@@ -3,6 +3,7 @@ import cors from 'cors';
 import { config } from './config';
 import callsRouter from './routes/calls';
 import retellToolsRouter from './routes/retellTools';
+import voiceRouter from './routes/voice';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use('/voice', voiceRouter);
 app.use('/calls', callsRouter);
 
 app.get('/health', (_req, res) => {

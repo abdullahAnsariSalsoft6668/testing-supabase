@@ -16,11 +16,49 @@ import {
 const RETELL_LIVEKIT_URL = 'wss://retell-ai-4ihahnq7.livekit.cloud';
 const decoder = new TextDecoder();
 
+export type RetellTranscriptLine = {
+    role: 'user' | 'assistant';
+    text: string;
+};
+
+type RetellTranscriptUtterance = {
+    role?: string;
+    content?: string;
+};
+
+function parseRetellTranscript(transcript: unknown): RetellTranscriptLine[] {
+    if (typeof transcript === 'string') {
+        const text = transcript.trim();
+        return text ? [{ role: 'assistant', text }] : [];
+    }
+
+    if (!Array.isArray(transcript)) return [];
+
+    return transcript
+        .map((item) => {
+            if (typeof item === 'string') {
+                const text = item.trim();
+                return text ? { role: 'assistant' as const, text } : null;
+            }
+            if (!item || typeof item !== 'object') return null;
+
+            const row = item as RetellTranscriptUtterance;
+            const text = String(row.content ?? '').trim();
+            if (!text) return null;
+
+            return {
+                role: row.role === 'user' ? ('user' as const) : ('assistant' as const),
+                text,
+            };
+        })
+        .filter((line): line is RetellTranscriptLine => line !== null);
+}
+
 export type RetellNativeCallCallbacks = {
     onCallStarted?: () => void;
     onCallEnded?: () => void;
     onCallReady?: () => void;
-    onTranscript?: (text: string) => void;
+    onTranscriptUpdate?: (lines: RetellTranscriptLine[]) => void;
     onAgentSpeaking?: (speaking: boolean) => void;
     onError?: (message: string) => void;
 };
@@ -74,11 +112,14 @@ export function useRetellNativeCall(
                 if (participant?.identity !== 'server') return;
                 const event = JSON.parse(decoder.decode(payload)) as {
                     event_type?: string;
-                    transcript?: string;
+                    transcript?: unknown;
                 };
 
                 if (event.event_type === 'update' && event.transcript) {
-                    callbacksRef.current.onTranscript?.(event.transcript);
+                    const lines = parseRetellTranscript(event.transcript);
+                    if (lines.length) {
+                        callbacksRef.current.onTranscriptUpdate?.(lines);
+                    }
                 } else if (event.event_type === 'agent_start_talking') {
                     callbacksRef.current.onAgentSpeaking?.(true);
                 } else if (event.event_type === 'agent_stop_talking') {

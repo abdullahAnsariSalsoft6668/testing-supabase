@@ -24,9 +24,9 @@ import type { AuthUserProfile } from '@/models/auth.types';
 import { PatientStackParamList } from '@/navigation/types';
 import { useSelector } from '@/redux/hooks';
 import {
-    createRetellWebCall,
-    isRetellVoiceEnabled,
-    type RetellWebCallSession,
+    createVoiceSession,
+    isVoiceSessionEnabled,
+    type VoiceSession,
 } from '@/services/retellCallService';
 import { moderateScale } from '@/styles/scaling';
 import { theme } from '@/styles/theme';
@@ -34,13 +34,10 @@ import { theme } from '@/styles/theme';
 type CallPhase = 'connecting' | 'ready' | 'listening' | 'thinking' | 'speaking' | 'live';
 type CallMode = 'retell' | 'alpha';
 
-/** Set true when Retell native voice is ready; false = call UI with text input for testing */
-const USE_NATIVE_RETELL_VOICE = false;
-
 const PHASE_LABELS: Record<CallPhase, string> = {
     connecting: 'Connecting…',
-    ready: 'Tap button to type',
-    listening: 'Type your message…',
+    ready: 'Ready',
+    listening: 'Listening…',
     thinking: 'Thinking…',
     speaking: 'Assistant speaking…',
     live: 'Live voice call',
@@ -53,15 +50,14 @@ const AiVoiceCallScreen = () => {
     const accessToken = useSelector((s) => s.auth.auth_token);
     const patientId = user?.patient_id ?? user?.patient?.id;
     const firstName = user?.full_name?.split(' ')[0];
+    const voiceEnabled = isVoiceSessionEnabled();
 
-    const [mode, setMode] = useState<CallMode>(
-        USE_NATIVE_RETELL_VOICE && isRetellVoiceEnabled() ? 'retell' : 'alpha',
-    );
+    const [mode, setMode] = useState<CallMode>(voiceEnabled ? 'retell' : 'alpha');
     const [phase, setPhase] = useState<CallPhase>('connecting');
     const [elapsed, setElapsed] = useState(0);
     const [input, setInput] = useState('');
     const [showInput, setShowInput] = useState(false);
-    const [retellSession, setRetellSession] = useState<RetellWebCallSession | null>(null);
+    const [voiceSession, setVoiceSession] = useState<VoiceSession | null>(null);
     const [retellLines, setRetellLines] = useState<{ id: string; role: 'user' | 'assistant'; text: string }[]>([]);
     const pulse = useRef(new Animated.Value(1)).current;
     const scrollRef = useRef<ScrollView>(null);
@@ -70,7 +66,7 @@ const AiVoiceCallScreen = () => {
     const { messages, loading, initGreeting, sendMessage } = useAiAssistant(patientId, firstName);
 
     const { stopCall: stopRetellCall } = useRetellNativeCall(
-        mode === 'retell' ? retellSession?.accessToken : undefined,
+        mode === 'retell' ? voiceSession?.accessToken : undefined,
         {
             onCallStarted: () => {
                 setPhase('live');
@@ -84,27 +80,26 @@ const AiVoiceCallScreen = () => {
             },
             onCallEnded: () => setPhase('ready'),
             onAgentSpeaking: (speaking) => setPhase(speaking ? 'speaking' : 'live'),
-            onTranscript: (text) => {
-                setRetellLines((prev) => [
-                    ...prev,
-                    {
-                        id: `retell-${Date.now()}`,
-                        role: 'assistant',
-                        text,
-                    },
-                ]);
+            onTranscriptUpdate: (lines) => {
+                setRetellLines(
+                    lines.map((line, idx) => ({
+                        id: `retell-${idx}-${line.role}`,
+                        role: line.role,
+                        text: line.text,
+                    })),
+                );
             },
             onError: (message) => {
                 Toast.show({ type: 'error', text1: 'Voice call failed', text2: message });
                 setMode('alpha');
-                setRetellSession(null);
+                setVoiceSession(null);
                 initGreeting();
                 setPhase('ready');
             },
         },
     );
 
-    const startRetellCall = useCallback(async () => {
+    const startVoiceCall = useCallback(async () => {
         if (!patientId || !accessToken || retellStarted.current) return;
         retellStarted.current = true;
         setPhase('connecting');
@@ -122,32 +117,37 @@ const AiVoiceCallScreen = () => {
             }
         }
 
-        const session = await createRetellWebCall({
+        const session = await createVoiceSession({
             patientId,
             firstName,
             accessToken,
         });
 
         if (session?.accessToken) {
-            setRetellSession(session);
+            setVoiceSession(session);
             setMode('retell');
             return;
         }
 
+        Toast.show({
+            type: 'error',
+            text1: 'Voice session failed',
+            text2: 'Check Node backend and yarn node:reverse',
+        });
         setMode('alpha');
         initGreeting();
         setTimeout(() => setPhase('ready'), 600);
     }, [accessToken, firstName, initGreeting, patientId]);
 
     useEffect(() => {
-        if (mode === 'retell' && USE_NATIVE_RETELL_VOICE) {
-            void startRetellCall();
+        if (mode === 'retell' && voiceEnabled) {
+            void startVoiceCall();
             return;
         }
         initGreeting();
         const t = setTimeout(() => setPhase('ready'), 400);
         return () => clearTimeout(t);
-    }, [initGreeting, mode, startRetellCall]);
+    }, [initGreeting, mode, startVoiceCall, voiceEnabled]);
 
     useEffect(() => {
         if (phase === 'connecting' || phase === 'ready') return;
@@ -175,9 +175,10 @@ const AiVoiceCallScreen = () => {
     }, [messages, retellLines]);
 
     useEffect(() => {
+        if (mode !== 'alpha') return;
         if (loading) setPhase('thinking');
         else if (phase === 'thinking') setPhase('ready');
-    }, [loading, phase]);
+    }, [loading, mode, phase]);
 
     const formatTime = (s: number) => {
         const m = Math.floor(s / 60);
@@ -188,6 +189,11 @@ const AiVoiceCallScreen = () => {
     const handleMicPress = () => {
         if (!patientId) {
             Toast.show({ type: 'error', text1: 'Patient profile required' });
+            return;
+        }
+        if (mode === 'retell') {
+            Toast.show({ type: 'info', text1: 'Speak naturally', text2: 'Live voice call is active' });
+            setPhase('live');
             return;
         }
         setShowInput(true);
@@ -215,15 +221,26 @@ const AiVoiceCallScreen = () => {
     };
 
     const alphaTranscript = messages.filter((m) => m.role !== 'system');
-    const transcript = alphaTranscript.map((m) => ({
-        id: m.id,
-        role: m.role === 'user' ? ('user' as const) : ('assistant' as const),
-        text: m.text,
-    }));
+    const transcript =
+        mode === 'retell'
+            ? retellLines
+            : alphaTranscript.map((m) => ({
+                  id: m.id,
+                  role: m.role === 'user' ? ('user' as const) : ('assistant' as const),
+                  text: m.text,
+              }));
 
-    const subtitle = USE_NATIVE_RETELL_VOICE && mode === 'retell' && retellSession
-        ? 'Native voice · Retell + LiveKit'
-        : 'Call UI · Type to test booking';
+    const subtitle =
+        mode === 'retell' && voiceSession
+            ? 'WebRTC · Retell voice → Supabase tools'
+            : 'Text fallback · Type to test booking';
+
+    const phaseLabel =
+        mode === 'alpha' && phase === 'ready'
+            ? 'Tap button to type'
+            : mode === 'alpha' && phase === 'listening'
+              ? 'Type your message…'
+              : PHASE_LABELS[phase];
 
     return (
         <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -238,7 +255,7 @@ const AiVoiceCallScreen = () => {
             </View>
 
             <View style={styles.callBody}>
-                <TextComp text={PHASE_LABELS[phase]} style={styles.phaseLabel} />
+                <TextComp text={phaseLabel} style={styles.phaseLabel} />
                 <TextComp text={formatTime(elapsed)} style={styles.timer} />
 
                 <Animated.View style={[styles.avatarWrap, { transform: [{ scale: pulse }] }]}>
@@ -272,13 +289,13 @@ const AiVoiceCallScreen = () => {
                             </View>
                         ))
                     )}
-                    {loading ? (
+                    {loading && mode === 'alpha' ? (
                         <ActivityIndicator color={theme.palette.teal.main} style={{ marginTop: 8 }} />
                     ) : null}
                 </ScrollView>
             </View>
 
-            {showInput ? (
+            {showInput && mode === 'alpha' ? (
                 <View style={[styles.inputDock, { paddingBottom: insets.bottom + moderateScale(12) }]}>
                     <TextInput
                         style={styles.voiceInput}
@@ -302,7 +319,10 @@ const AiVoiceCallScreen = () => {
                     <Pressable style={styles.micBtn} onPress={handleMicPress} disabled={loading}>
                         <MyIcons name="callBlue" size={28} stroke={theme.colors.text.inverse} />
                     </Pressable>
-                    <TextComp text="Tap to type a message" style={styles.micHint} />
+                    <TextComp
+                        text={mode === 'retell' ? 'Live call — speak now' : 'Tap to type a message'}
+                        style={styles.micHint}
+                    />
                 </View>
             )}
         </View>
