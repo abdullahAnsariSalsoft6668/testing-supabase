@@ -1,0 +1,76 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: var(--overlay);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 440px);
+  max-height: min(86vh, 640px);
+  overflow: auto;
+  border-radius: var(--radius-xl);
+  background: var(--elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(20px) saturate(1.2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem 0.75rem;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 12px;
+  background: var(--screen);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: var(--text);
+}
+
+.body {
+  padding: 0.5rem 1.25rem 1.15rem;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding: 0 1.25rem 1.25rem;
+  flex-wrap: wrap;
+}

@@ -17,7 +17,9 @@ Fill in `nodejsbackend/.env` or root `.env`:
 | `RETELL_API_KEY` | From [Retell dashboard](https://dashboard.retellai.com) |
 | `RETELL_AGENT_ID` | Your voice agent id |
 | `EXPO_PUBLIC_SUPABASE_URL` | Same as mobile (auto-loaded from root `.env`) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Recommended for server-side booking |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Required** secret/service_role key (not publishable). Without it RLS returns zero doctors to Retell tools. |
+
+Also run `supabase/migrations/021_retell_anon_read_approved_catalog.sql` in the SQL Editor if you temporarily use the publishable key.
 
 ## Run
 
@@ -51,20 +53,63 @@ Point each function to your public URL (use ngrok for local dev):
 ```
 You are a friendly hospital assistant for {{patient_name}}.
 
-Use tools to find doctors, check slots, book appointments, and list visits.
-Always confirm doctor, date, and time before calling book_appointment.
+When the patient asks which days or slots are available:
+- Call list_slots (doctor optional). Read back the open days and times in plain speech.
+- Example: "Hashim is free tomorrow at 9 and 10, and Saturday at 11."
+
+Booking flow:
+1) list_doctors or list_slots to see availability.
+2) Copy doctor_id and slot_id from tool results — never invent IDs.
+3) Confirm doctor, day, and time, then book_appointment.
+
+Never ask the patient for a doctor_id. Speak names, days, and times only.
 Keep responses short for voice.
 ```
+
+**Retell dashboard tip:** Keep **Payload: args only** turned **OFF** for booking tools so `call.metadata.patient_id` is sent. Or add a `patient_id` parameter with const `{{patient_id}}`.
+
 
 ### Tool parameters (JSON schema in Retell)
 
 **list_doctors** — optional `specialization` (string)
 
-**list_slots** — required `doctor_id`, `date` (today/tomorrow/YYYY-MM-DD)
+**list_slots** — optional `doctor_id` (omit to hear all doctors’ open days), optional `date` (`today` / `tomorrow` / `YYYY-MM-DD`, or `available` / leave empty for all upcoming days)
 
-**book_appointment** — required `doctor_id`, `slot_id`, `appointment_date`, `appointment_time`
+**book_appointment** — `doctor_id`, `slot_id` (from list_slots), optional `appointment_date` / `appointment_time`
 
 **my_appointments** — no args (uses `patient_id` from call metadata)
+
+Example `list_slots` parameters JSON:
+```json
+{
+  "type": "object",
+  "required": ["doctor_id", "date"],
+  "properties": {
+    "doctor_id": {
+      "type": "string",
+      "description": "Exact doctor_id UUID from list_doctors (preferred), or doctor list number / name"
+    },
+    "date": {
+      "type": "string",
+      "description": "today, tomorrow, or YYYY-MM-DD"
+    }
+  }
+}
+```
+
+Example `book_appointment` parameters JSON:
+```json
+{
+  "type": "object",
+  "required": ["doctor_id", "slot_id"],
+  "properties": {
+    "doctor_id": { "type": "string", "description": "doctor_id from list_doctors" },
+    "slot_id": { "type": "string", "description": "slot_id from list_slots" },
+    "appointment_date": { "type": "string" },
+    "appointment_time": { "type": "string" }
+  }
+}
+```
 
 ## Mobile (React Native — native voice)
 
@@ -80,16 +125,16 @@ React Native (Talk to AI)
         → POST /retell/tools/* → Supabase
 ```
 
-Root `.env`:
+Root `.env` (works with `adb reverse` on USB device + emulator):
 ```env
-EXPO_PUBLIC_NODE_API_BASE_URL=http://10.0.2.2:3001
+EXPO_PUBLIC_NODE_API_BASE_URL=http://127.0.0.1:3001
 ```
 
 After adding LiveKit native modules:
 ```bash
 cd ios && pod install
 yarn android   # or yarn ios
-adb reverse tcp:3001 tcp:3001   # Android emulator
+yarn node:reverse   # forwards device :3001/:8000 → Mac
 ```
 
 ## Local dev with ngrok

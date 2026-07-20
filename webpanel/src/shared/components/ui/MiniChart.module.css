@@ -1,0 +1,91 @@
+.chart {
+  width: 100%;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+  height: 140px;
+  padding-top: 0.5rem;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.bar {
+  width: 100%;
+  max-width: 36px;
+  border-radius: 10px 10px 6px 6px;
+  background: linear-gradient(180deg, #14b8a6 0%, #0f766e 100%);
+  min-height: 8px;
+  box-shadow: 0 8px 16px rgba(15, 118, 110, 0.18);
+}
+
+.barCol:nth-child(even) .bar {
+  background: linear-gradient(180deg, #38bdf8 0%, #0f766e 100%);
+  opacity: 0.9;
+}
+
+.tick {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.donutWrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+
+.donut {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.donutTrack {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 10;
+}
+
+.donutValue {
+  fill: none;
+  stroke: url(#none);
+  stroke: #14b8a6;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.donutLabel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.donutLabel strong {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.donutLabel span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}

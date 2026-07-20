@@ -1,0 +1,472 @@
+.brand {
+  --login-primary: #0f766e;
+  --login-secondary: #14b8a6;
+  --login-accent: #38bdf8;
+  --login-text: #0f172a;
+  --login-muted: #64748b;
+  --login-bg: #f8fafc;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  background:
+    radial-gradient(900px 520px at 12% 18%, rgba(20, 184, 166, 0.18), transparent 58%),
+    radial-gradient(700px 480px at 88% 12%, rgba(56, 189, 248, 0.16), transparent 55%),
+    radial-gradient(600px 400px at 70% 88%, rgba(15, 118, 110, 0.12), transparent 50%),
+    linear-gradient(160deg, #f8fafc 0%, #eefcf9 45%, #f0f9ff 100%);
+  color: var(--login-text);
+  min-height: 100%;
+}
+
+.blobA,
+.blobB,
+.blobC {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blobA {
+  width: 280px;
+  height: 280px;
+  top: -60px;
+  left: -40px;
+  background: rgba(20, 184, 166, 0.35);
+}
+
+.blobB {
+  width: 320px;
+  height: 320px;
+  right: -80px;
+  top: 20%;
+  background: rgba(56, 189, 248, 0.28);
+}
+
+.blobC {
+  width: 220px;
+  height: 220px;
+  bottom: 8%;
+  left: 18%;
+  background: rgba(15, 118, 110, 0.22);
+}
+
+.gridGlow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(15, 118, 110, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 118, 110, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 40% 40%, black 20%, transparent 75%);
+}
+
+.brandInner {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 560px);
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.35rem;
+}
+
+.logoMark {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(145deg, #0f766e 0%, #14b8a6 55%, #38bdf8 140%);
+  box-shadow:
+    0 12px 28px rgba(15, 118, 110, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.logoName {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.logoTag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--login-muted);
+  letter-spacing: 0.02em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--login-primary);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(15, 118, 110, 0.06);
+  margin-bottom: 1.15rem;
+}
+
+.headline {
+  margin: 0;
+  font-size: clamp(2rem, 4.2vw, 3.15rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  max-width: 12ch;
+  color: var(--login-text);
+}
+
+.copy {
+  margin: 1rem 0 0;
+  max-width: 38ch;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--login-muted);
+  font-weight: 500;
+}
+
+.stage {
+  position: relative;
+  margin-top: 2.25rem;
+  min-height: 320px;
+}
+
+.mockup {
+  position: relative;
+  z-index: 2;
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.1),
+    0 2px 0 rgba(255, 255, 255, 0.8) inset;
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.mockChrome {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1rem;
+  background: rgba(248, 250, 252, 0.85);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.mockChrome span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+.mockChrome span:nth-child(1) {
+  background: #fda4af;
+}
+.mockChrome span:nth-child(2) {
+  background: #fcd34d;
+}
+.mockChrome span:nth-child(3) {
+  background: #86efac;
+}
+
+.mockTitle {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--login-muted);
+  letter-spacing: 0.02em;
+}
+
+.mockBody {
+  padding: 1rem 1.1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.mockStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 0.55rem;
+}
+
+.mockStat,
+.mockStatAccent {
+  border-radius: 14px;
+  padding: 0.7rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.mockStat span,
+.mockStatAccent span {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--login-muted);
+}
+
+.mockStat strong {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--login-text);
+  line-height: 1.2;
+  margin-top: 0.15rem;
+}
+
+.mockStat em {
+  font-style: normal;
+  font-size: 0.7rem;
+  color: var(--login-secondary);
+  font-weight: 600;
+}
+
+.mockStatAccent {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(56, 189, 248, 0.12));
+  border-color: rgba(20, 184, 166, 0.25);
+  color: var(--login-primary);
+}
+
+.mockStatAccent strong {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--login-text);
+}
+
+.mockChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+  height: 72px;
+  padding: 0.35rem 0.25rem;
+}
+
+.bar {
+  flex: 1;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, #14b8a6 0%, #0f766e 100%);
+  opacity: 0.85;
+  min-height: 12px;
+}
+
+.bar:nth-child(even) {
+  background: linear-gradient(180deg, #38bdf8 0%, #0f766e 100%);
+  opacity: 0.7;
+}
+
+.mockTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.mockRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.55rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid #e2e8f0;
+}
+
+.avatar,
+.avatarAlt {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+}
+
+.avatarAlt {
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+}
+
+.mockRow strong {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--login-text);
+}
+
+.mockRow span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--login-muted);
+}
+
+.mockRow em {
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+}
+
+.pending {
+  color: #d97706 !important;
+  background: #fffbeb !important;
+}
+
+.floatCard {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(14px) saturate(1.25);
+  color: var(--login-primary);
+}
+
+.floatCard strong {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--login-text);
+}
+
+.floatCard span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--login-muted);
+  font-weight: 500;
+}
+
+.floatAppt {
+  top: -12px;
+  right: -8px;
+}
+
+.floatShield {
+  bottom: 28%;
+  left: -18px;
+}
+
+.floatTeam {
+  bottom: -8px;
+  right: 12%;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--login-text);
+}
+
+.iconOrb {
+  position: absolute;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: linear-gradient(145deg, #0f766e, #14b8a6);
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.28);
+}
+
+.orb1 {
+  top: 18%;
+  left: -28px;
+}
+
+.orb2 {
+  top: 42%;
+  right: -22px;
+  background: linear-gradient(145deg, #0284c7, #38bdf8);
+  box-shadow: 0 12px 28px rgba(56, 189, 248, 0.3);
+}
+
+@media (max-width: 1100px) {
+  .floatAppt {
+    right: 0;
+  }
+
+  .floatShield {
+    left: 0;
+  }
+
+  .orb1,
+  .orb2 {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .brand {
+    min-height: auto;
+    padding: 1.5rem 1.25rem 0.5rem;
+  }
+
+  .headline {
+    max-width: none;
+    font-size: clamp(1.75rem, 7vw, 2.35rem);
+  }
+
+  .copy {
+    max-width: none;
+  }
+
+  .stage {
+    min-height: 0;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .floatAppt,
+  .floatShield,
+  .floatTeam {
+    display: none;
+  }
+
+  .mockStats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mockStatAccent {
+    grid-column: 1 / -1;
+  }
+}

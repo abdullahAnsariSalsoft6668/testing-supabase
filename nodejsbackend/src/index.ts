@@ -34,10 +34,18 @@ app.get('/health', (_req, res) => {
     status: 'ok',
     retellConfigured: Boolean(config.retellApiKey && config.retellAgentId),
     supabaseConfigured: Boolean(config.supabaseUrl && config.supabaseKey),
+    supabaseUsesServiceRole: config.supabaseUsesServiceRole,
   });
 });
 
 app.listen(config.port, '0.0.0.0', () => {
   console.log(`Node backend running on http://0.0.0.0:${config.port}`);
   console.log(`Health: http://localhost:${config.port}/health`);
+  if (config.supabaseUrl && config.supabaseKey && !config.supabaseUsesServiceRole) {
+    console.warn(
+      '[warn] Supabase key is publishable/anon — RLS blocks most writes. ' +
+        'Set SUPABASE_SERVICE_ROLE_KEY (secret) in nodejsbackend/.env for Retell booking. ' +
+        'For list_doctors, run migration 021_retell_anon_read_approved_catalog.sql.',
+    );
+  }
 });

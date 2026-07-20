@@ -1,0 +1,29 @@
+.card {
+  background: var(--card);
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: 1.15rem 1.25rem;
+  height: fit-content;
+  width: 100%;
+  transition:
+    box-shadow var(--duration) var(--ease-out),
+    transform var(--duration) var(--ease-out),
+    border-color var(--duration) ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-float);
+}
+
+.glass {
+  background: var(--elevated);
+  backdrop-filter: blur(16px) saturate(1.15);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 0.95rem 1rem;
+  }
+}

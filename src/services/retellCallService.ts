@@ -6,6 +6,10 @@ export type VoiceSession = {
   agentId?: string;
 };
 
+export type CreateVoiceSessionResult =
+  | { ok: true; session: VoiceSession }
+  | { ok: false; error: string };
+
 function getNodeApiBaseUrl() {
   return EXPO_PUBLIC_NODE_API_BASE_URL?.trim().replace(/\/$/, '') ?? '';
 }
@@ -24,9 +28,14 @@ export async function createVoiceSession(params: {
   patientId: string;
   firstName?: string;
   accessToken: string;
-}): Promise<VoiceSession | null> {
+}): Promise<CreateVoiceSessionResult> {
   const baseUrl = getNodeApiBaseUrl();
-  if (!baseUrl) return null;
+  if (!baseUrl) {
+    return {
+      ok: false,
+      error: 'EXPO_PUBLIC_NODE_API_BASE_URL is not set. Use http://127.0.0.1:3001 with yarn node:reverse.',
+    };
+  }
 
   try {
     const res = await fetch(`${baseUrl}/voice/session`, {
@@ -41,13 +50,33 @@ export async function createVoiceSession(params: {
       }),
     });
 
-    if (!res.ok) return null;
+    const data = (await res.json().catch(() => ({}))) as VoiceSession & { error?: string };
 
-    const data = (await res.json()) as VoiceSession;
-    if (!data.accessToken) return null;
-    return data;
-  } catch {
-    return null;
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: data.error ?? `Voice session failed (${res.status}). Is Node running on :3001?`,
+      };
+    }
+
+    if (!data.accessToken) {
+      return { ok: false, error: 'Voice session response missing accessToken' };
+    }
+
+    return {
+      ok: true,
+      session: {
+        accessToken: data.accessToken,
+        callId: data.callId,
+        agentId: data.agentId,
+      },
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Network request failed';
+    return {
+      ok: false,
+      error: `${message}. Run: yarn node:dev && yarn node:reverse`,
+    };
   }
 }
 
@@ -60,5 +89,6 @@ export async function createRetellWebCall(params: {
   firstName?: string;
   accessToken: string;
 }): Promise<VoiceSession | null> {
-  return createVoiceSession(params);
+  const result = await createVoiceSession(params);
+  return result.ok ? result.session : null;
 }

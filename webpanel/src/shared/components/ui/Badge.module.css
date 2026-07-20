@@ -1,0 +1,40 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.pending {
+  background: #fff4e6;
+  color: var(--pending);
+}
+
+.ok {
+  background: var(--green-surface);
+  color: var(--green);
+}
+
+.info {
+  background: var(--sky);
+  color: var(--sky-accent);
+}
+
+.danger {
+  background: #fff5f5;
+  color: var(--error);
+}
+
+.teal {
+  background: var(--teal-surface);
+  color: var(--teal-dark);
+}
+
+.soft {
+  background: var(--gray-100, #f1f5f9);
+  color: var(--text-secondary);
+}

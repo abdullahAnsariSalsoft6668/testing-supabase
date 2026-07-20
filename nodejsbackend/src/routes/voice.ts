@@ -32,7 +32,13 @@ router.post('/session', async (req: Request, res: Response) => {
     return res.json(session);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to create voice session';
-    const status = message.includes('not configured') ? 503 : 500;
+    console.error('[voice/session]', message);
+    const status =
+      message.includes('not configured')
+        ? 503
+        : message.includes('Invalid or expired')
+          ? 401
+          : 500;
     return res.status(status).json({ error: message });
   }
 });

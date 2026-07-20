@@ -91,6 +91,7 @@ const AiVoiceCallScreen = () => {
             },
             onError: (message) => {
                 Toast.show({ type: 'error', text1: 'Voice call failed', text2: message });
+                retellStarted.current = false;
                 setMode('alpha');
                 setVoiceSession(null);
                 initGreeting();
@@ -110,6 +111,7 @@ const AiVoiceCallScreen = () => {
             );
             if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
                 Toast.show({ type: 'error', text1: 'Microphone permission required' });
+                retellStarted.current = false;
                 setMode('alpha');
                 initGreeting();
                 setPhase('ready');
@@ -117,14 +119,14 @@ const AiVoiceCallScreen = () => {
             }
         }
 
-        const session = await createVoiceSession({
+        const result = await createVoiceSession({
             patientId,
             firstName,
             accessToken,
         });
 
-        if (session?.accessToken) {
-            setVoiceSession(session);
+        if (result.ok) {
+            setVoiceSession(result.session);
             setMode('retell');
             return;
         }
@@ -132,8 +134,9 @@ const AiVoiceCallScreen = () => {
         Toast.show({
             type: 'error',
             text1: 'Voice session failed',
-            text2: 'Check Node backend and yarn node:reverse',
+            text2: result.error,
         });
+        retellStarted.current = false;
         setMode('alpha');
         initGreeting();
         setTimeout(() => setPhase('ready'), 600);

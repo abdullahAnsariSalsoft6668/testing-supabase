@@ -1,0 +1,85 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0.7rem 1.2rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    box-shadow var(--duration) var(--ease-out),
+    background var(--duration) ease,
+    color var(--duration) ease,
+    transform var(--duration) var(--ease-out),
+    filter var(--duration) ease;
+  min-height: 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.primary {
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 70%);
+  color: white;
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.28);
+}
+
+.primary:hover:not(:disabled) {
+  box-shadow: 0 14px 32px rgba(15, 118, 110, 0.36);
+  filter: brightness(1.03);
+}
+
+.secondary {
+  background: var(--card);
+  color: var(--primary);
+  border: 1.5px solid rgba(15, 118, 110, 0.22);
+  box-shadow: var(--shadow-xs);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--teal-surface);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--screen);
+  color: var(--text);
+}
+
+.danger {
+  background: var(--danger-surface);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.soft {
+  background: var(--teal-surface);
+  color: var(--primary);
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
