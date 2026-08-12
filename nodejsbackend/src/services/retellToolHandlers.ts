@@ -10,12 +10,15 @@ import {
   cancelAppointment,
   listPatientAppointments,
 } from './appointments';
-import { formatVoiceDate, isOpenDateQuery, parseDateInput } from '../utils/dates';
+import { findAnyPatientId, findPatientIdByEmail, patientExists } from './patients';
+import { config } from '../config';
+import { formatErrorMessage } from '../utils/errors';
+import { formatVoiceDate, isOpenDateQuery, localISODate, parseDateInput } from '../utils/dates';
 
 export type RetellToolPayload = {
   name?: string;
   args?: Record<string, unknown>;
-  call?: {
+  call?: Record<string, unknown> & {
     metadata?: Record<string, unknown>;
     retell_llm_dynamic_variables?: Record<string, string>;
   };
@@ -23,16 +26,94 @@ export type RetellToolPayload = {
 
 type DoctorRow = Awaited<ReturnType<typeof listApprovedDoctors>>[number];
 
+/** Retell sometimes sends unresolved templates like "{{patient_id}}" in tool args. */
+function isUnresolvedRetellTemplate(value: string): boolean {
+  return /^\{\{[^}]+\}\}$/.test(value.trim());
+}
+
+function normalizePatientId(value: unknown): string {
+  const id = String(value ?? '').trim();
+  if (!id || isUnresolvedRetellTemplate(id)) return '';
+  return id;
+}
+
 function patientIdFromCall(payload: RetellToolPayload, args: Record<string, unknown>): string {
-  const fromArgs = String(args.patient_id ?? args.patientId ?? '').trim();
-  if (fromArgs) return fromArgs;
-
   const meta = payload.call?.metadata ?? {};
-  const fromMeta = String(meta.patient_id ?? meta.patientId ?? '').trim();
-  if (fromMeta) return fromMeta;
+  const vars = payload.call?.retell_llm_dynamic_variables ?? {};
 
-  const fromVars = payload.call?.retell_llm_dynamic_variables?.patient_id?.trim();
-  return fromVars ?? '';
+  const candidates: unknown[] = [
+    args.patient_id,
+    args.patientId,
+    meta.patient_id,
+    meta.patientId,
+    vars.patient_id,
+    vars.patientId,
+    payload.call?.patient_id,
+    payload.call?.patientId,
+  ];
+
+  for (const candidate of candidates) {
+    const id = normalizePatientId(candidate);
+    if (id) return id;
+  }
+
+  return '';
+}
+
+let cachedTestPatientId: string | null | undefined;
+
+export type PatientIdSource = 'call' | 'test_id' | 'test_email' | 'none';
+
+async function resolvePatientId(
+  payload: RetellToolPayload,
+  args: Record<string, unknown>,
+): Promise<{ patientId: string; source: PatientIdSource }> {
+  const fromCall = patientIdFromCall(payload, args);
+  if (fromCall) return { patientId: fromCall, source: 'call' };
+
+  if (config.retellTestPatientId) {
+    if (await patientExists(config.retellTestPatientId)) {
+      console.log('[retell/tools] using RETELL_TEST_PATIENT_ID fallback');
+      return { patientId: config.retellTestPatientId, source: 'test_id' };
+    }
+    console.warn(
+      '[retell/tools] RETELL_TEST_PATIENT_ID not found in patients table:',
+      config.retellTestPatientId,
+    );
+  }
+
+  if (cachedTestPatientId !== undefined) {
+    return { patientId: cachedTestPatientId ?? '', source: cachedTestPatientId ? 'test_email' : 'none' };
+  }
+
+  if (config.retellTestPatientEmail) {
+    try {
+      cachedTestPatientId = await findPatientIdByEmail(config.retellTestPatientEmail);
+      if (cachedTestPatientId) {
+        console.log(
+          '[retell/tools] using RETELL_TEST_PATIENT_EMAIL fallback:',
+          config.retellTestPatientEmail,
+        );
+        return { patientId: cachedTestPatientId, source: 'test_email' };
+      }
+    } catch (err) {
+      console.error('[retell/tools] test patient lookup failed:', err);
+    }
+  }
+
+  cachedTestPatientId = null;
+
+  const anyPatient = await findAnyPatientId();
+  if (anyPatient) {
+    console.warn(
+      '[retell/tools] using first patient in DB as Test Audio fallback:',
+      anyPatient,
+    );
+    cachedTestPatientId = anyPatient;
+    return { patientId: anyPatient, source: 'test_email' };
+  }
+
+  return { patientId: '', source: 'none' };
 }
 
 function formatDoctors(doctors: DoctorRow[]) {
@@ -238,7 +319,7 @@ async function availabilityForAllDoctors(doctors: DoctorRow[]) {
 export async function handleRetellTool(payload: RetellToolPayload): Promise<string> {
   const name = (payload.name ?? '').trim();
   const args = payload.args ?? {};
-  const patientId = patientIdFromCall(payload, args);
+  const { patientId, source: patientSource } = await resolvePatientId(payload, args);
 
   switch (name) {
     case 'list_doctors': {
@@ -251,7 +332,10 @@ export async function handleRetellTool(payload: RetellToolPayload): Promise<stri
       const doctorRef = String(
         args.doctor_id ?? args.doctorId ?? args.doctor ?? args.doctor_name ?? '',
       ).trim();
-      const dateRaw = String(args.date ?? args.appointment_date ?? args.when ?? '').trim();
+      let dateRaw = String(args.date ?? args.appointment_date ?? args.when ?? '').trim();
+      if (!dateRaw || dateRaw === 'null' || dateRaw === 'undefined') {
+        dateRaw = '';
+      }
 
       // No doctor → full system availability (days + slots)
       if (!doctorRef) {
@@ -267,10 +351,13 @@ export async function handleRetellTool(payload: RetellToolPayload): Promise<stri
     }
 
     case 'book_appointment': {
+      console.log('[retell/tools] book_appointment patientSource=', patientSource);
+
       if (!patientId) {
         return (
-          'Patient id is missing from the call. In Retell, keep "Payload: args only" OFF for book_appointment, ' +
-          'or add patient_id as a parameter with const {{patient_id}}.'
+          'Booking failed: no patient is linked to this call. ' +
+          'From the mobile app: log in as a patient, open Talk to AI, then book again. ' +
+          'For Retell Test Audio only: set RETELL_TEST_PATIENT_ID in nodejsbackend/.env and restart the Node server.'
         );
       }
 
@@ -317,6 +404,7 @@ export async function handleRetellTool(payload: RetellToolPayload): Promise<stri
 
       const slot =
         resolveSlot(slotsResult.slots, slotRef) ??
+        resolveSlot(slotsPool, slotRef) ??
         (!slotRef ? slotsResult.slots[0] : null);
 
       if (!slot) {
@@ -325,24 +413,42 @@ export async function handleRetellTool(payload: RetellToolPayload): Promise<stri
         );
       }
 
-      const bookDate = slot.appointment_date ?? slotsResult.date;
+      const rawBookDate = String(slot.appointment_date ?? slotsResult.date ?? appointmentDate ?? '').trim();
+      const bookDate =
+        parseDateInput(rawBookDate) ??
+        parseDateInput('today') ??
+        localISODate();
+
       let appointmentTime = String(args.appointment_time ?? slot.start_time ?? '').trim();
       if (appointmentTime && appointmentTime.split(':').length === 2) {
         appointmentTime = `${appointmentTime}:00`;
       }
+      if (!appointmentTime) {
+        appointmentTime = String(slot.start_time ?? '09:00:00');
+      }
 
-      const booked = await bookAppointment({
-        patient_id: patientId,
-        doctor_id: doctor.id,
-        slot_id: slot.id,
-        appointment_date: bookDate,
-        appointment_time: appointmentTime || '09:00:00',
-      });
+      try {
+        const booked = await bookAppointment({
+          patient_id: patientId,
+          doctor_id: doctor.id,
+          slot_id: slot.id,
+          appointment_date: bookDate,
+          appointment_time: appointmentTime,
+        });
 
-      return (
-        `Appointment booked with ${doctor.name} for ${formatVoiceDate(String(booked.appointment_date))} ` +
-        `at ${String(booked.appointment_time).slice(0, 5)}. Check My Visits in the app.`
-      );
+        const timeLabel = String(booked.appointment_time ?? appointmentTime).slice(0, 5);
+        return (
+          `Appointment booked with ${doctor.name} for ${formatVoiceDate(String(booked.appointment_date ?? bookDate))} ` +
+          `at ${timeLabel}. Check My Visits in the app.`
+        );
+      } catch (err) {
+        const message = formatErrorMessage(err);
+        console.error('[retell/tools] book_appointment failed:', message, err);
+        if (/duplicate|unique|already booked|already taken/i.test(message)) {
+          return 'That slot was just taken. Please pick another time from list_slots.';
+        }
+        return `Could not complete booking: ${message}`;
+      }
     }
 
     case 'my_appointments': {

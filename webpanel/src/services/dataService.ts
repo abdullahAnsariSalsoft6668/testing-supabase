@@ -94,23 +94,71 @@ export async function deleteSlot(id: string) {
 }
 
 export async function listAppointmentsForPatient(patientId: string) {
-  const { data, error } = await supabase
+  const withRelations = await supabase
     .from('appointments')
     .select('*, doctors(*, users(*), hospitals(*))')
+    .eq('patient_id', patientId)
+    .order('appointment_date', { ascending: false });
+
+  if (!withRelations.error) {
+    return (withRelations.data ?? []) as Appointment[];
+  }
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*')
     .eq('patient_id', patientId)
     .order('appointment_date', { ascending: false });
   if (error) throw error;
   return (data ?? []) as Appointment[];
 }
 
+async function attachPatientsToAppointments(rows: Appointment[]): Promise<Appointment[]> {
+  if (!rows.length) return rows;
+
+  const patientIds = [...new Set(rows.map((r) => r.patient_id).filter(Boolean))];
+  const { data: patients, error } = await supabase
+    .from('patients')
+    .select('*, users(*)')
+    .in('id', patientIds);
+
+  if (error || !patients?.length) return rows;
+
+  const byId = new Map(patients.map((p) => [p.id, p]));
+  return rows.map((row) => ({
+    ...row,
+    patients: (byId.get(row.patient_id) ?? row.patients) as Appointment['patients'],
+  }));
+}
+
+/** Doctor visits — prefer RPC (migration 020) to avoid RLS/embed failures. */
 export async function listAppointmentsForDoctor(doctorId: string) {
-  const { data, error } = await supabase
+  const { data: rpcRows, error: rpcError } = await supabase.rpc('list_doctor_appointments', {
+    p_doctor_id: doctorId,
+  });
+
+  if (!rpcError) {
+    return attachPatientsToAppointments((rpcRows ?? []) as Appointment[]);
+  }
+
+  const withRelations = await supabase
     .from('appointments')
     .select('*, patients(*, users(*))')
     .eq('doctor_id', doctorId)
     .order('appointment_date', { ascending: false });
+
+  if (!withRelations.error) {
+    return (withRelations.data ?? []) as Appointment[];
+  }
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('doctor_id', doctorId)
+    .order('appointment_date', { ascending: false });
+
   if (error) throw error;
-  return (data ?? []) as Appointment[];
+  return attachPatientsToAppointments((data ?? []) as Appointment[]);
 }
 
 export async function listAllAppointments(limit = 40) {

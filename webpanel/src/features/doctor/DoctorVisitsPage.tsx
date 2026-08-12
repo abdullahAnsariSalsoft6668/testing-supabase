@@ -14,9 +14,11 @@ export function DoctorVisitsPage() {
   const [rows, setRows] = useState<Appointment[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   async function reload() {
     if (!user?.doctor_id) return;
+    setLoadError(null);
     setRows(await listAppointmentsForDoctor(user.doctor_id));
   }
 
@@ -29,6 +31,9 @@ export function DoctorVisitsPage() {
       setLoading(true);
       try {
         await reload();
+      } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'Could not load visits');
+        setRows([]);
       } finally {
         setLoading(false);
       }
@@ -50,9 +55,22 @@ export function DoctorVisitsPage() {
   return (
     <div>
       <PageHeader title="Visits" subtitle="Confirm, complete, or cancel appointments." />
+      {loadError ? (
+        <Card>
+          <p className={styles.empty}>{loadError}</p>
+          <p className={styles.meta}>
+            Run migrations 019 and 020 in Supabase SQL Editor, then sign out and back in as the
+            doctor linked to Dr Hashim.
+          </p>
+        </Card>
+      ) : null}
       <Card>
         {rows.length === 0 ? (
-          <p className={styles.empty}>No visits found.</p>
+          <p className={styles.empty}>
+            {user?.doctor_id
+              ? 'No visits found.'
+              : 'Doctor profile not linked — log in with the doctor account for this schedule.'}
+          </p>
         ) : (
           <div className={styles.list}>
             {rows.map((a) => (

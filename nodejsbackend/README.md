@@ -66,7 +66,7 @@ Never ask the patient for a doctor_id. Speak names, days, and times only.
 Keep responses short for voice.
 ```
 
-**Retell dashboard tip:** Keep **Payload: args only** turned **OFF** for booking tools so `call.metadata.patient_id` is sent. Or add a `patient_id` parameter with const `{{patient_id}}`.
+**Retell dashboard tip:** Keep **Payload: args only** turned **OFF** so `call.metadata.patient_id` is sent from mobile app calls. Do **not** add a `patient_id` tool parameter with `{{patient_id}}` — the backend resolves the patient from call metadata or `RETELL_TEST_PATIENT_ID` in `.env`.
 
 
 ### Tool parameters (JSON schema in Retell)
