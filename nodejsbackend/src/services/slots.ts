@@ -1,3 +1,4 @@
+import { listBookedSlotIds } from './appointments.js';
 import { getSupabase } from './supabase.js';
 import { addLocalDays, localISODate, parseDateInput } from '../utils/dates.js';
 
@@ -45,9 +46,13 @@ export async function listAvailableSlots(doctorId: string, dateInput: string) {
 
   if (error) throw error;
 
+  const rows = data ?? [];
+  const booked = await listBookedSlotIds(rows.map((row) => row.id));
+  const openRows = rows.filter((row) => !booked.has(row.id));
+
   return {
     date,
-    slots: mapSlots(data ?? []),
+    slots: mapSlots(openRows),
   };
 }
 
@@ -71,11 +76,14 @@ export async function listUpcomingAvailableSlots(doctorId: string, days = 21) {
   if (error) throw error;
 
   const rows = data ?? [];
+  const booked = await listBookedSlotIds(rows.map((row) => row.id));
+  const openRows = rows.filter((row) => !booked.has(row.id));
+
   return {
     from,
     to,
-    slots: mapSlots(rows),
-    dates: [...new Set(rows.map((r) => r.appointment_date as string))],
+    slots: mapSlots(openRows),
+    dates: [...new Set(openRows.map((r) => r.appointment_date as string))],
   };
 }
 

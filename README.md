@@ -1,6 +1,29 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+This is a [**React Native**](https://reactnative.dev) hospital health app with Supabase, AI assistant (chat + voice), and admin/doctor/patient flows.
 
-# Getting Started
+## Run the project
+
+See **[docs/RUN_GUIDE.md](./docs/RUN_GUIDE.md)** for full setup:
+
+- Mobile app (Metro + Android/iOS)
+- Environment variables (`.env`, `nodejsbackend/.env`)
+- **Talk to AI** voice (Node backend + Retell + ngrok)
+- AI chat (in-app or optional FastAPI)
+- Troubleshooting
+
+Quick start (mobile only):
+
+```bash
+yarn install
+cp .env.example .env   # fill Supabase keys
+yarn start
+yarn android           # or yarn ios
+```
+
+Manual testing: [docs/TESTING.md](./docs/TESTING.md)
+
+---
+
+# Getting Started (React Native default)
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 

@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { config } from '../config';
 import { handleRetellTool, type RetellToolPayload } from '../services/retellToolHandlers';
 import { verifyRetellSignature } from '../utils/verifyRetell';
+import { formatErrorMessage } from '../utils/errors';
 
 const router = Router();
 
@@ -42,12 +43,30 @@ async function runTool(req: Request, res: Response, toolName?: string) {
     }
 
     const payload = normalizeRetellBody((req.body ?? {}) as Record<string, unknown>, toolName);
-    console.log('[retell/tools]', payload.name, 'args=', JSON.stringify(payload.args ?? {}));
+    const args = payload.args ?? {};
+
+    const metaPatient = (payload.call?.metadata as Record<string, unknown> | undefined)?.patient_id;
+    const varsPatient = payload.call?.retell_llm_dynamic_variables?.patient_id;
+
+    console.log(
+      '[retell/tools]',
+      payload.name,
+      'args=',
+      JSON.stringify(args),
+      'hasCall=',
+      Boolean(payload.call),
+      'meta.patient_id=',
+      metaPatient ? String(metaPatient).slice(0, 8) + '…' : '(none)',
+      'vars.patient_id=',
+      varsPatient ? String(varsPatient).slice(0, 8) + '…' : '(none)',
+    );
 
     const result = await handleRetellTool(payload);
+    const preview = result.length > 160 ? `${result.slice(0, 160)}…` : result;
+    console.log('[retell/tools]', payload.name, 'result=', preview);
     return res.json({ result });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Tool execution failed';
+    const message = formatErrorMessage(err);
     console.error('[retell/tools]', message);
     return res.status(200).json({ result: `Sorry, something went wrong: ${message}` });
   }
