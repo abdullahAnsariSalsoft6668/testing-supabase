@@ -51,6 +51,7 @@ export async function createVoiceSession(params: {
     });
 
     const data = (await res.json().catch(() => ({}))) as VoiceSession & { error?: string };
+    console.log('createVoiceSession data -- new', data);
 
     if (!res.ok) {
       return {

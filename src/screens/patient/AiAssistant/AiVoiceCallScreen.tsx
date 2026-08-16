@@ -119,6 +119,7 @@ const AiVoiceCallScreen = () => {
             }
         }
 
+        console.log('createVoiceSession', { patientId, firstName, accessToken });
         const result = await createVoiceSession({
             patientId,
             firstName,
