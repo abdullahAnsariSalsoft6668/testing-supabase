@@ -13,6 +13,7 @@ function bearerToken(req: Request): string | null {
 
 /** @deprecated Use POST /voice/session */
 router.post('/web', async (req: Request, res: Response) => {
+  console.log('createVoiceSession req -- new', req.body);
   try {
     const token = bearerToken(req);
     if (!token) {
