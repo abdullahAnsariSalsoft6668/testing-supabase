@@ -29,6 +29,7 @@ function RoleHomeRedirect() {
 export function AppRouter() {
   return (
     <Routes>
+      <Route path="*" element={<NotFoundPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
