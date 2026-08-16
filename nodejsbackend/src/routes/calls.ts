@@ -25,12 +25,16 @@ router.post('/web', async (req: Request, res: Response) => {
     const firstName = String(req.body?.firstName ?? req.body?.first_name ?? 'there').trim();
 
     if (!patientId) {
+      console.log('createVoiceSession patientId -- new', patientId);
       return res.status(400).json({ error: 'patientId is required' });
     }
 
+    console.log('createVoiceSession body -- new', patientId, firstName);
     const session = await createVoiceSession({ patientId, firstName });
+    console.log('createVoiceSession session -- new', session);
     return res.json(session);
   } catch (err) {
+    console.log('createVoiceSession err -- new', err);
     const message = err instanceof Error ? err.message : 'Failed to create web call';
     const status = message.includes('not configured') ? 503 : 500;
     return res.status(status).json({ error: message });
@@ -38,6 +42,7 @@ router.post('/web', async (req: Request, res: Response) => {
 });
 
 router.get('/health', (_req, res) => {
+  console.log('health -- new');
   res.json({
     status: 'ok',
     retellConfigured: Boolean(config.retellApiKey && config.retellAgentId),

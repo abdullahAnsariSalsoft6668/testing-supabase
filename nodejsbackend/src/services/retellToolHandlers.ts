@@ -316,156 +316,923 @@ async function availabilityForAllDoctors(doctors: DoctorRow[]) {
   );
 }
 
-export async function handleRetellTool(payload: RetellToolPayload): Promise<string> {
+// export async function handleRetellTool(payload: RetellToolPayload): Promise<string> {
+//   const name = (payload.name ?? '').trim();
+//   const args = payload.args ?? {};
+//   const { patientId, source: patientSource } = await resolvePatientId(payload, args);
+
+//   switch (name) {
+//     case 'list_doctors': {
+//       const doctors = await listApprovedDoctors(String(args.specialization ?? ''));
+//       return formatDoctors(doctors);
+//     }
+
+//     case 'list_slots': {
+//       const doctors = await listApprovedDoctors();
+//       const doctorRef = String(
+//         args.doctor_id ?? args.doctorId ?? args.doctor ?? args.doctor_name ?? '',
+//       ).trim();
+//       let dateRaw = String(args.date ?? args.appointment_date ?? args.when ?? '').trim();
+//       if (!dateRaw || dateRaw === 'null' || dateRaw === 'undefined') {
+//         dateRaw = '';
+//       }
+
+//       // No doctor → full system availability (days + slots)
+//       if (!doctorRef) {
+//         return availabilityForAllDoctors(doctors);
+//       }
+
+//       const doctor = resolveDoctor(doctors, doctorRef);
+//       if (!doctor) {
+//         return `Could not find doctor "${doctorRef}". Call list_doctors first.`;
+//       }
+
+//       return availabilityForDoctor(doctor, dateRaw || 'available');
+//     }
+
+//     case 'book_appointment': {
+//       console.log('[retell/tools] book_appointment patientSource=', patientSource);
+
+//       if (!patientId) {
+//         return (
+//           'Booking failed: no patient is linked to this call. ' +
+//           'From the mobile app: log in as a patient, open Talk to AI, then book again. ' +
+//           'For Retell Test Audio only: set RETELL_TEST_PATIENT_ID in nodejsbackend/.env and restart the Node server.'
+//         );
+//       }
+
+//       const doctors = await listApprovedDoctors();
+//       const doctorRef = String(
+//         args.doctor_id ?? args.doctorId ?? args.doctor ?? args.doctor_name ?? '',
+//       ).trim();
+//       const doctor = resolveDoctor(doctors, doctorRef);
+//       if (!doctor) {
+//         return (
+//           'doctor_id is required. Call list_doctors or list_slots, pick a doctor, then pass that doctor_id.'
+//         );
+//       }
+
+//       let appointmentDate = String(args.appointment_date ?? args.date ?? '').trim();
+//       const openDate = isOpenDateQuery(appointmentDate);
+//       if (!appointmentDate || openDate) {
+//         appointmentDate = parseDateInput('tomorrow') ?? '';
+//       }
+
+//       let slotsPool = await loadDoctorUpcoming(doctor);
+//       const specificDate = openDate ? null : parseDateInput(appointmentDate);
+//       let slotsResult = {
+//         date: specificDate ?? appointmentDate,
+//         slots: specificDate
+//           ? slotsPool.filter((s) => s.appointment_date === specificDate)
+//           : slotsPool,
+//       };
+
+//       if (slotsResult.slots.length === 0) {
+//         slotsResult = { date: slotsPool[0]?.appointment_date ?? appointmentDate, slots: slotsPool };
+//       }
+
+//       if (slotsResult.slots.length === 0) {
+//         return `No available slots for ${doctor.name}. Cannot book.`;
+//       }
+
+//       // Re-index for resolveSlot number refs after formatting calendar
+//       slotsResult.slots = slotsResult.slots.map((s, i) => ({ ...s, index: i + 1 }));
+
+//       const slotRef = String(
+//         args.slot_id ?? args.slotId ?? args.slot ?? args.time ?? args.appointment_time ?? '',
+//       ).trim();
+
+//       const slot =
+//         resolveSlot(slotsResult.slots, slotRef) ??
+//         resolveSlot(slotsPool, slotRef) ??
+//         (!slotRef ? slotsResult.slots[0] : null);
+
+//       if (!slot) {
+//         return (
+//           `Could not match that time. ${formatDaysAndSlots(doctor, slotsResult.slots)}`
+//         );
+//       }
+
+//       const rawBookDate = String(slot.appointment_date ?? slotsResult.date ?? appointmentDate ?? '').trim();
+//       const bookDate =
+//         parseDateInput(rawBookDate) ??
+//         parseDateInput('today') ??
+//         localISODate();
+
+//       let appointmentTime = String(args.appointment_time ?? slot.start_time ?? '').trim();
+//       if (appointmentTime && appointmentTime.split(':').length === 2) {
+//         appointmentTime = `${appointmentTime}:00`;
+//       }
+//       if (!appointmentTime) {
+//         appointmentTime = String(slot.start_time ?? '09:00:00');
+//       }
+
+//       try {
+//         const booked = await bookAppointment({
+//           patient_id: patientId,
+//           doctor_id: doctor.id,
+//           slot_id: slot.id,
+//           appointment_date: bookDate,
+//           appointment_time: appointmentTime,
+//         });
+
+//         const timeLabel = String(booked.appointment_time ?? appointmentTime).slice(0, 5);
+//         return (
+//           `Appointment booked with ${doctor.name} for ${formatVoiceDate(String(booked.appointment_date ?? bookDate))} ` +
+//           `at ${timeLabel}. Check My Visits in the app.`
+//         );
+//       } catch (err) {
+//         const message = formatErrorMessage(err);
+//         console.error('[retell/tools] book_appointment failed:', message, err);
+//         if (/duplicate|unique|already booked|already taken/i.test(message)) {
+//           return 'That slot was just taken. Please pick another time from list_slots.';
+//         }
+//         return `Could not complete booking: ${message}`;
+//       }
+//     }
+
+//     case 'my_appointments': {
+//       if (!patientId) return 'Patient id is missing. Cannot list appointments.';
+//       const rows = await listPatientAppointments(patientId);
+//       return formatAppointments(rows);
+//     }
+
+//     case 'cancel_appointment': {
+//       if (!patientId) return 'Patient id is missing.';
+//       const appointmentId = String(args.appointment_id ?? args.appointmentId ?? '').trim();
+//       if (!appointmentId) return 'appointment_id is required.';
+//       await cancelAppointment(appointmentId, patientId);
+//       return 'Appointment cancelled successfully.';
+//     }
+
+//     default:
+//       return `Unknown tool: ${name}`;
+//   }
+// }
+
+
+export async function handleRetellTool(
+  payload: RetellToolPayload,
+): Promise<string> {
+  const requestId = Math.random().toString(36).substring(2, 10);
+
   const name = (payload.name ?? '').trim();
   const args = payload.args ?? {};
-  const { patientId, source: patientSource } = await resolvePatientId(payload, args);
 
-  switch (name) {
-    case 'list_doctors': {
-      const doctors = await listApprovedDoctors(String(args.specialization ?? ''));
-      return formatDoctors(doctors);
-    }
+  console.log('');
+  console.log('==================================================');
+  console.log(`[${requestId}] RETELL TOOL REQUEST START`);
+  console.log('==================================================');
+  console.log(`[${requestId}] Tool: ${name}`);
+  console.log(`[${requestId}] Args:`, JSON.stringify(args));
 
-    case 'list_slots': {
-      const doctors = await listApprovedDoctors();
-      const doctorRef = String(
-        args.doctor_id ?? args.doctorId ?? args.doctor ?? args.doctor_name ?? '',
-      ).trim();
-      let dateRaw = String(args.date ?? args.appointment_date ?? args.when ?? '').trim();
-      if (!dateRaw || dateRaw === 'null' || dateRaw === 'undefined') {
-        dateRaw = '';
-      }
+  try {
+    // --------------------------------------------------
+    // Resolve patient
+    // --------------------------------------------------
 
-      // No doctor → full system availability (days + slots)
-      if (!doctorRef) {
-        return availabilityForAllDoctors(doctors);
-      }
+    console.log(`[${requestId}] Resolving patient...`);
 
-      const doctor = resolveDoctor(doctors, doctorRef);
-      if (!doctor) {
-        return `Could not find doctor "${doctorRef}". Call list_doctors first.`;
-      }
+    const {
+      patientId,
+      source: patientSource,
+    } = await resolvePatientId(payload, args);
 
-      return availabilityForDoctor(doctor, dateRaw || 'available');
-    }
+    console.log(
+      `[${requestId}] Patient source: ${patientSource ?? 'unknown'}`,
+    );
 
-    case 'book_appointment': {
-      console.log('[retell/tools] book_appointment patientSource=', patientSource);
+    console.log(
+      `[${requestId}] Patient ID resolved: ${patientId ? 'YES' : 'NO'}`,
+    );
 
-      if (!patientId) {
-        return (
-          'Booking failed: no patient is linked to this call. ' +
-          'From the mobile app: log in as a patient, open Talk to AI, then book again. ' +
-          'For Retell Test Audio only: set RETELL_TEST_PATIENT_ID in nodejsbackend/.env and restart the Node server.'
+    // --------------------------------------------------
+    // LIST DOCTORS
+    // --------------------------------------------------
+
+    switch (name) {
+      case 'list_doctors': {
+        console.log('');
+        console.log(`[${requestId}] ---------- LIST DOCTORS ----------`);
+
+        const specialization = String(
+          args.specialization ?? '',
+        ).trim();
+
+        console.log(
+          `[${requestId}] Specialization: ${
+            specialization || '(all)'
+          }`,
         );
-      }
 
-      const doctors = await listApprovedDoctors();
-      const doctorRef = String(
-        args.doctor_id ?? args.doctorId ?? args.doctor ?? args.doctor_name ?? '',
-      ).trim();
-      const doctor = resolveDoctor(doctors, doctorRef);
-      if (!doctor) {
-        return (
-          'doctor_id is required. Call list_doctors or list_slots, pick a doctor, then pass that doctor_id.'
-        );
-      }
+        try {
+          console.log(
+            `[${requestId}] Calling listApprovedDoctors...`,
+          );
 
-      let appointmentDate = String(args.appointment_date ?? args.date ?? '').trim();
-      const openDate = isOpenDateQuery(appointmentDate);
-      if (!appointmentDate || openDate) {
-        appointmentDate = parseDateInput('tomorrow') ?? '';
-      }
+          const doctors = await listApprovedDoctors(
+            specialization,
+          );
 
-      let slotsPool = await loadDoctorUpcoming(doctor);
-      const specificDate = openDate ? null : parseDateInput(appointmentDate);
-      let slotsResult = {
-        date: specificDate ?? appointmentDate,
-        slots: specificDate
-          ? slotsPool.filter((s) => s.appointment_date === specificDate)
-          : slotsPool,
-      };
+          console.log(
+            `[${requestId}] Doctors returned: ${doctors.length}`,
+          );
 
-      if (slotsResult.slots.length === 0) {
-        slotsResult = { date: slotsPool[0]?.appointment_date ?? appointmentDate, slots: slotsPool };
-      }
+          const result = formatDoctors(doctors);
 
-      if (slotsResult.slots.length === 0) {
-        return `No available slots for ${doctor.name}. Cannot book.`;
-      }
+          console.log(
+            `[${requestId}] Formatted response length: ${result.length}`,
+          );
 
-      // Re-index for resolveSlot number refs after formatting calendar
-      slotsResult.slots = slotsResult.slots.map((s, i) => ({ ...s, index: i + 1 }));
+          console.log(
+            `[${requestId}] LIST DOCTORS SUCCESS`,
+          );
 
-      const slotRef = String(
-        args.slot_id ?? args.slotId ?? args.slot ?? args.time ?? args.appointment_time ?? '',
-      ).trim();
+          return result;
+        } catch (err) {
+          console.error(
+            `[${requestId}] LIST DOCTORS FAILED:`,
+            err,
+          );
 
-      const slot =
-        resolveSlot(slotsResult.slots, slotRef) ??
-        resolveSlot(slotsPool, slotRef) ??
-        (!slotRef ? slotsResult.slots[0] : null);
-
-      if (!slot) {
-        return (
-          `Could not match that time. ${formatDaysAndSlots(doctor, slotsResult.slots)}`
-        );
-      }
-
-      const rawBookDate = String(slot.appointment_date ?? slotsResult.date ?? appointmentDate ?? '').trim();
-      const bookDate =
-        parseDateInput(rawBookDate) ??
-        parseDateInput('today') ??
-        localISODate();
-
-      let appointmentTime = String(args.appointment_time ?? slot.start_time ?? '').trim();
-      if (appointmentTime && appointmentTime.split(':').length === 2) {
-        appointmentTime = `${appointmentTime}:00`;
-      }
-      if (!appointmentTime) {
-        appointmentTime = String(slot.start_time ?? '09:00:00');
-      }
-
-      try {
-        const booked = await bookAppointment({
-          patient_id: patientId,
-          doctor_id: doctor.id,
-          slot_id: slot.id,
-          appointment_date: bookDate,
-          appointment_time: appointmentTime,
-        });
-
-        const timeLabel = String(booked.appointment_time ?? appointmentTime).slice(0, 5);
-        return (
-          `Appointment booked with ${doctor.name} for ${formatVoiceDate(String(booked.appointment_date ?? bookDate))} ` +
-          `at ${timeLabel}. Check My Visits in the app.`
-        );
-      } catch (err) {
-        const message = formatErrorMessage(err);
-        console.error('[retell/tools] book_appointment failed:', message, err);
-        if (/duplicate|unique|already booked|already taken/i.test(message)) {
-          return 'That slot was just taken. Please pick another time from list_slots.';
+          throw err;
         }
-        return `Could not complete booking: ${message}`;
+      }
+
+      // --------------------------------------------------
+      // LIST SLOTS
+      // --------------------------------------------------
+
+      case 'list_slots': {
+        console.log('');
+        console.log(`[${requestId}] ---------- LIST SLOTS ----------`);
+
+        try {
+          console.log(
+            `[${requestId}] Loading approved doctors...`,
+          );
+
+          const doctors = await listApprovedDoctors();
+
+          console.log(
+            `[${requestId}] Doctors loaded: ${doctors.length}`,
+          );
+
+          const doctorRef = String(
+            args.doctor_id ??
+              args.doctorId ??
+              args.doctor ??
+              args.doctor_name ??
+              '',
+          ).trim();
+
+          let dateRaw = String(
+            args.date ??
+              args.appointment_date ??
+              args.when ??
+              '',
+          ).trim();
+
+          console.log(
+            `[${requestId}] Doctor ref: ${
+              doctorRef || '(none)'
+            }`,
+          );
+
+          console.log(
+            `[${requestId}] Date raw: ${
+              dateRaw || '(none)'
+            }`,
+          );
+
+          if (
+            !dateRaw ||
+            dateRaw === 'null' ||
+            dateRaw === 'undefined'
+          ) {
+            dateRaw = '';
+          }
+
+          // ----------------------------------------------
+          // No doctor -> all availability
+          // ----------------------------------------------
+
+          if (!doctorRef) {
+            console.log(
+              `[${requestId}] No doctor provided.`,
+            );
+
+            console.log(
+              `[${requestId}] Loading availability for all doctors...`,
+            );
+
+            const result =
+              availabilityForAllDoctors(doctors);
+
+            console.log(
+              `[${requestId}] All availability generated.`,
+            );
+
+            console.log(
+              `[${requestId}] Response length: ${result.length}`,
+            );
+
+            console.log(
+              `[${requestId}] LIST SLOTS SUCCESS`,
+            );
+
+            return result;
+          }
+
+          // ----------------------------------------------
+          // Resolve doctor
+          // ----------------------------------------------
+
+          console.log(
+            `[${requestId}] Resolving doctor...`,
+          );
+
+          const doctor = resolveDoctor(
+            doctors,
+            doctorRef,
+          );
+
+          if (!doctor) {
+            console.log(
+              `[${requestId}] Doctor NOT FOUND: ${doctorRef}`,
+            );
+
+            return `Could not find doctor "${doctorRef}". Call list_doctors first.`;
+          }
+
+          console.log(
+            `[${requestId}] Doctor resolved successfully.`,
+          );
+
+          console.log(
+            `[${requestId}] Loading doctor availability...`,
+          );
+
+          const result = availabilityForDoctor(
+            doctor,
+            dateRaw || 'available',
+          );
+
+          console.log(
+            `[${requestId}] Doctor availability generated.`,
+          );
+
+          console.log(
+            `[${requestId}] Response length: ${result.length}`,
+          );
+
+          console.log(
+            `[${requestId}] LIST SLOTS SUCCESS`,
+          );
+
+          return result;
+        } catch (err) {
+          console.error(
+            `[${requestId}] LIST SLOTS FAILED:`,
+            err,
+          );
+
+          throw err;
+        }
+      }
+
+      // --------------------------------------------------
+      // BOOK APPOINTMENT
+      // --------------------------------------------------
+
+      case 'book_appointment': {
+        console.log('');
+        console.log(
+          `[${requestId}] ---------- BOOK APPOINTMENT ----------`,
+        );
+
+        console.log(
+          `[${requestId}] Patient source: ${
+            patientSource ?? 'unknown'
+          }`,
+        );
+
+        console.log(
+          `[${requestId}] Patient ID available: ${
+            patientId ? 'YES' : 'NO'
+          }`,
+        );
+
+        if (!patientId) {
+          console.error(
+            `[${requestId}] BOOKING FAILED: Patient ID missing`,
+          );
+
+          return (
+            'Booking failed: no patient is linked to this call. ' +
+            'From the mobile app: log in as a patient, open Talk to AI, then book again. ' +
+            'For Retell Test Audio only: set RETELL_TEST_PATIENT_ID in nodejsbackend/.env and restart the Node server.'
+          );
+        }
+
+        try {
+          // ----------------------------------------------
+          // Load doctors
+          // ----------------------------------------------
+
+          console.log(
+            `[${requestId}] Loading approved doctors...`,
+          );
+
+          const doctors = await listApprovedDoctors();
+
+          console.log(
+            `[${requestId}] Doctors loaded: ${doctors.length}`,
+          );
+
+          // ----------------------------------------------
+          // Resolve doctor
+          // ----------------------------------------------
+
+          const doctorRef = String(
+            args.doctor_id ??
+              args.doctorId ??
+              args.doctor ??
+              args.doctor_name ??
+              '',
+          ).trim();
+
+          console.log(
+            `[${requestId}] Doctor ref: ${
+              doctorRef || '(missing)'
+            }`,
+          );
+
+          const doctor = resolveDoctor(
+            doctors,
+            doctorRef,
+          );
+
+          if (!doctor) {
+            console.error(
+              `[${requestId}] Doctor NOT FOUND`,
+            );
+
+            return (
+              'doctor_id is required. Call list_doctors or list_slots, ' +
+              'pick a doctor, then pass that doctor_id.'
+            );
+          }
+
+          console.log(
+            `[${requestId}] Doctor resolved successfully.`,
+          );
+
+          // ----------------------------------------------
+          // Appointment date
+          // ----------------------------------------------
+
+          let appointmentDate = String(
+            args.appointment_date ??
+              args.date ??
+              '',
+          ).trim();
+
+          console.log(
+            `[${requestId}] Appointment date input: ${
+              appointmentDate || '(missing)'
+            }`,
+          );
+
+          const openDate =
+            isOpenDateQuery(appointmentDate);
+
+          if (!appointmentDate || openDate) {
+            console.log(
+              `[${requestId}] Date is open/empty. Using tomorrow.`,
+            );
+
+            appointmentDate =
+              parseDateInput('tomorrow') ?? '';
+          }
+
+          console.log(
+            `[${requestId}] Normalized appointment date: ${
+              appointmentDate || '(missing)'
+            }`,
+          );
+
+          // ----------------------------------------------
+          // Load upcoming slots
+          // ----------------------------------------------
+
+          console.log(
+            `[${requestId}] Loading upcoming doctor slots...`,
+          );
+
+          let slotsPool =
+            await loadDoctorUpcoming(doctor);
+
+          console.log(
+            `[${requestId}] Slots loaded: ${slotsPool.length}`,
+          );
+
+          const specificDate = openDate
+            ? null
+            : parseDateInput(appointmentDate);
+
+          console.log(
+            `[${requestId}] Specific date: ${
+              specificDate ?? '(all)'
+            }`,
+          );
+
+          let slotsResult = {
+            date:
+              specificDate ?? appointmentDate,
+            slots: specificDate
+              ? slotsPool.filter(
+                  (s) =>
+                    s.appointment_date ===
+                    specificDate,
+                )
+              : slotsPool,
+          };
+
+          console.log(
+            `[${requestId}] Matching slots: ${
+              slotsResult.slots.length
+            }`,
+          );
+
+          // ----------------------------------------------
+          // Fallback to first available date
+          // ----------------------------------------------
+
+          if (slotsResult.slots.length === 0) {
+            console.log(
+              `[${requestId}] No slots for requested date.`,
+            );
+
+            slotsResult = {
+              date:
+                slotsPool[0]?.appointment_date ??
+                appointmentDate,
+              slots: slotsPool,
+            };
+
+            console.log(
+              `[${requestId}] Fallback slots: ${
+                slotsResult.slots.length
+              }`,
+            );
+          }
+
+          // ----------------------------------------------
+          // No slots
+          // ----------------------------------------------
+
+          if (slotsResult.slots.length === 0) {
+            console.log(
+              `[${requestId}] No available slots.`,
+            );
+
+            return `No available slots for ${doctor.name}. Cannot book.`;
+          }
+
+          // ----------------------------------------------
+          // Re-index slots
+          // ----------------------------------------------
+
+          slotsResult.slots =
+            slotsResult.slots.map((s, i) => ({
+              ...s,
+              index: i + 1,
+            }));
+
+          console.log(
+            `[${requestId}] Slots indexed: ${
+              slotsResult.slots.length
+            }`,
+          );
+
+          // ----------------------------------------------
+          // Resolve requested slot
+          // ----------------------------------------------
+
+          const slotRef = String(
+            args.slot_id ??
+              args.slotId ??
+              args.slot ??
+              args.time ??
+              args.appointment_time ??
+              '',
+          ).trim();
+
+          console.log(
+            `[${requestId}] Slot reference: ${
+              slotRef || '(none)'
+            }`,
+          );
+
+          const slot =
+            resolveSlot(
+              slotsResult.slots,
+              slotRef,
+            ) ??
+            resolveSlot(
+              slotsPool,
+              slotRef,
+            ) ??
+            (!slotRef
+              ? slotsResult.slots[0]
+              : null);
+
+          if (!slot) {
+            console.log(
+              `[${requestId}] Could not resolve requested slot.`,
+            );
+
+            return (
+              `Could not match that time. ${formatDaysAndSlots(
+                doctor,
+                slotsResult.slots,
+              )}`
+            );
+          }
+
+          console.log(
+            `[${requestId}] Slot resolved successfully.`,
+          );
+
+          // ----------------------------------------------
+          // Booking date
+          // ----------------------------------------------
+
+          const rawBookDate = String(
+            slot.appointment_date ??
+              slotsResult.date ??
+              appointmentDate ??
+              '',
+          ).trim();
+
+          const bookDate =
+            parseDateInput(rawBookDate) ??
+            parseDateInput('today') ??
+            localISODate();
+
+          console.log(
+            `[${requestId}] Booking date: ${bookDate}`,
+          );
+
+          // ----------------------------------------------
+          // Booking time
+          // ----------------------------------------------
+
+          let appointmentTime = String(
+            args.appointment_time ??
+              slot.start_time ??
+              '',
+          ).trim();
+
+          if (
+            appointmentTime &&
+            appointmentTime.split(':').length === 2
+          ) {
+            appointmentTime = `${appointmentTime}:00`;
+          }
+
+          if (!appointmentTime) {
+            appointmentTime = String(
+              slot.start_time ?? '09:00:00',
+            );
+          }
+
+          console.log(
+            `[${requestId}] Booking time: ${appointmentTime}`,
+          );
+
+          // ----------------------------------------------
+          // Book appointment
+          // ----------------------------------------------
+
+          console.log(
+            `[${requestId}] Calling bookAppointment...`,
+          );
+
+          const booked = await bookAppointment({
+            patient_id: patientId,
+            doctor_id: doctor.id,
+            slot_id: slot.id,
+            appointment_date: bookDate,
+            appointment_time: appointmentTime,
+          });
+
+          console.log(
+            `[${requestId}] Appointment booking SUCCESS`,
+          );
+
+          const timeLabel = String(
+            booked.appointment_time ??
+              appointmentTime,
+          ).slice(0, 5);
+
+          const response =
+            `Appointment booked with ${doctor.name} ` +
+            `for ${formatVoiceDate(
+              String(
+                booked.appointment_date ??
+                  bookDate,
+              ),
+            )} at ${timeLabel}. ` +
+            `Check My Visits in the app.`;
+
+          console.log(
+            `[${requestId}] BOOK APPOINTMENT SUCCESS`,
+          );
+
+          return response;
+        } catch (err) {
+          const message =
+            formatErrorMessage(err);
+
+          console.error(
+            `[${requestId}] BOOK APPOINTMENT FAILED:`,
+            message,
+          );
+
+          console.error(
+            `[${requestId}] Original error:`,
+            err,
+          );
+
+          if (
+            /duplicate|unique|already booked|already taken/i.test(
+              message,
+            )
+          ) {
+            console.log(
+              `[${requestId}] Slot already taken.`,
+            );
+
+            return (
+              'That slot was just taken. ' +
+              'Please pick another time from list_slots.'
+            );
+          }
+
+          return `Could not complete booking: ${message}`;
+        }
+      }
+
+      // --------------------------------------------------
+      // MY APPOINTMENTS
+      // --------------------------------------------------
+
+      case 'my_appointments': {
+        console.log('');
+        console.log(
+          `[${requestId}] ---------- MY APPOINTMENTS ----------`,
+        );
+
+        if (!patientId) {
+          console.error(
+            `[${requestId}] Patient ID missing.`,
+          );
+
+          return 'Patient id is missing. Cannot list appointments.';
+        }
+
+        try {
+          console.log(
+            `[${requestId}] Loading patient appointments...`,
+          );
+
+          const rows =
+            await listPatientAppointments(
+              patientId,
+            );
+
+          console.log(
+            `[${requestId}] Appointments returned: ${rows.length}`,
+          );
+
+          const result =
+            formatAppointments(rows);
+
+          console.log(
+            `[${requestId}] MY APPOINTMENTS SUCCESS`,
+          );
+
+          return result;
+        } catch (err) {
+          console.error(
+            `[${requestId}] MY APPOINTMENTS FAILED:`,
+            err,
+          );
+
+          throw err;
+        }
+      }
+
+      // --------------------------------------------------
+      // CANCEL APPOINTMENT
+      // --------------------------------------------------
+
+      case 'cancel_appointment': {
+        console.log('');
+        console.log(
+          `[${requestId}] ---------- CANCEL APPOINTMENT ----------`,
+        );
+
+        if (!patientId) {
+          console.error(
+            `[${requestId}] Patient ID missing.`,
+          );
+
+          return 'Patient id is missing.';
+        }
+
+        const appointmentId = String(
+          args.appointment_id ??
+            args.appointmentId ??
+            '',
+        ).trim();
+
+        console.log(
+          `[${requestId}] Appointment ID provided: ${
+            appointmentId ? 'YES' : 'NO'
+          }`,
+        );
+
+        if (!appointmentId) {
+          return 'appointment_id is required.';
+        }
+
+        try {
+          console.log(
+            `[${requestId}] Calling cancelAppointment...`,
+          );
+
+          await cancelAppointment(
+            appointmentId,
+            patientId,
+          );
+
+          console.log(
+            `[${requestId}] CANCEL APPOINTMENT SUCCESS`,
+          );
+
+          return 'Appointment cancelled successfully.';
+        } catch (err) {
+          console.error(
+            `[${requestId}] CANCEL APPOINTMENT FAILED:`,
+            err,
+          );
+
+          throw err;
+        }
+      }
+
+      // --------------------------------------------------
+      // UNKNOWN TOOL
+      // --------------------------------------------------
+
+      default: {
+        console.error(
+          `[${requestId}] UNKNOWN TOOL: ${name}`,
+        );
+
+        return `Unknown tool: ${name}`;
       }
     }
+  } catch (err) {
+    console.error('');
+    console.error(
+      `==================================================`,
+    );
+    console.error(
+      `[${requestId}] RETELL TOOL REQUEST FAILED`,
+    );
+    console.error(
+      `==================================================`,
+    );
+    console.error(
+      `[${requestId}] Tool: ${name}`,
+    );
+    console.error(
+      `[${requestId}] Error:`,
+      err,
+    );
 
-    case 'my_appointments': {
-      if (!patientId) return 'Patient id is missing. Cannot list appointments.';
-      const rows = await listPatientAppointments(patientId);
-      return formatAppointments(rows);
-    }
-
-    case 'cancel_appointment': {
-      if (!patientId) return 'Patient id is missing.';
-      const appointmentId = String(args.appointment_id ?? args.appointmentId ?? '').trim();
-      if (!appointmentId) return 'appointment_id is required.';
-      await cancelAppointment(appointmentId, patientId);
-      return 'Appointment cancelled successfully.';
-    }
-
-    default:
-      return `Unknown tool: ${name}`;
+    throw err;
+  } finally {
+    console.log(
+      `[${requestId}] RETELL TOOL REQUEST END`,
+    );
+    console.log(
+      '==================================================',
+    );
+    console.log('');
   }
 }
