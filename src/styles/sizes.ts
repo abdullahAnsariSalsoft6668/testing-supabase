@@ -1,12 +1,14 @@
 import { moderateScale } from '@/styles/scaling';
 
 export const borders = {
-    button: moderateScale(12),
+    button: moderateScale(16),
     card: moderateScale(20),
     cricle: 9999,
-    input: moderateScale(14),
+    input: moderateScale(16),
     preferenceBox: moderateScale(20),
     step: moderateScale(12),
+    sheet: moderateScale(28),
+    appointmentCard: moderateScale(28),
 } as const;
 
 export const spaces = {

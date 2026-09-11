@@ -1,6 +1,20 @@
+import { EXPO_PUBLIC_NODE_API_BASE_URL } from '@env';
 import { getSupabase } from '@/utils/supabase';
 import { getLocalDateIso } from '@/utils/date';
 import type { Appointment, AppointmentStatus, Patient } from '@/types/database';
+
+function notifyBookingSms(appointmentId: string) {
+    const baseUrl = EXPO_PUBLIC_NODE_API_BASE_URL?.trim().replace(/\/$/, '') ?? '';
+    if (!baseUrl || !appointmentId) return;
+
+    void fetch(`${baseUrl}/notify/booking-sms`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId }),
+    }).catch((err) => {
+        console.warn('[appointment] booking SMS notify failed:', err);
+    });
+}
 
 export async function bookAppointment(params: {
     patient_id: string;
@@ -16,6 +30,8 @@ export async function bookAppointment(params: {
         .select('*')
         .single();
     if (aptError) throw aptError;
+
+    notifyBookingSms(String(appointment.id));
 
     return appointment as Appointment;
 }

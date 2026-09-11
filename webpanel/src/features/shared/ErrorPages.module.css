@@ -24,8 +24,8 @@
   border-radius: 18px;
   display: grid;
   place-items: center;
-  color: var(--primary, #0f766e);
-  background: linear-gradient(145deg, rgba(15, 118, 110, 0.12), rgba(56, 189, 248, 0.14));
+  color: var(--primary, #1e75e5);
+  background: linear-gradient(145deg, rgba(30, 117, 229, 0.12), rgba(56, 189, 248, 0.14));
 }
 
 .code {
@@ -33,7 +33,7 @@
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: var(--primary, #0f766e);
+  color: var(--primary, #1e75e5);
 }
 
 .card h1 {
@@ -58,9 +58,9 @@
   gap: 0.45rem;
   padding: 0.75rem 1.15rem;
   border-radius: 14px;
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  background: linear-gradient(135deg, #1e75e5, #1e75e5);
   color: white;
   font-weight: 700;
   font-size: 0.9rem;
-  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.28);
+  box-shadow: 0 10px 24px rgba(30, 117, 229, 0.28);
 }

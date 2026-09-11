@@ -1,14 +1,14 @@
 .page {
-  --login-primary: #0f766e;
-  --login-secondary: #14b8a6;
-  --login-accent: #38bdf8;
-  --login-text: #0f172a;
-  --login-muted: #64748b;
-  --login-bg: #f8fafc;
+  --login-primary: #1e75e5;
+  --login-secondary: #155cb8;
+  --login-accent: #7eb0f0;
+  --login-text: #1a1d26;
+  --login-muted: #6b7280;
+  --login-bg: #f4f7fb;
   --login-card: #ffffff;
-  --login-border: #e2e8f0;
+  --login-border: rgba(15, 23, 42, 0.08);
   --login-radius: 16px;
-  --login-focus: 0 0 0 4px rgba(15, 118, 110, 0.16);
+  --login-focus: 0 0 0 4px rgba(30, 117, 229, 0.14);
 
   min-height: 100vh;
   min-height: 100dvh;
@@ -27,9 +27,9 @@
   justify-content: center;
   padding: clamp(1.5rem, 4vw, 3rem);
   background:
-    radial-gradient(600px 400px at 80% 10%, rgba(56, 189, 248, 0.08), transparent 60%),
-    radial-gradient(500px 360px at 20% 90%, rgba(20, 184, 166, 0.07), transparent 55%),
-    #f8fafc;
+    radial-gradient(600px 400px at 80% 10%, rgba(232, 241, 252, 0.9), transparent 60%),
+    radial-gradient(500px 360px at 20% 90%, rgba(30, 117, 229, 0.06), transparent 55%),
+    #f4f7fb;
 }
 
 .cardWrap {
@@ -48,7 +48,7 @@
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
     0 20px 50px rgba(15, 23, 42, 0.08),
-    0 4px 16px rgba(15, 118, 110, 0.04);
+    0 4px 16px rgba(30, 117, 229, 0.04);
   backdrop-filter: blur(20px) saturate(1.2);
 }
 
@@ -59,8 +59,9 @@
 .cardHeader h2 {
   margin: 0;
   font-size: clamp(1.45rem, 3vw, 1.75rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--login-text);
 }
 
@@ -198,7 +199,7 @@
 }
 
 .forgot:hover {
-  color: #0d9488;
+  color: #155cb8;
   text-decoration: underline;
 }
 
@@ -222,9 +223,9 @@
   letter-spacing: -0.01em;
   color: white;
   cursor: pointer;
-  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 55%, #2dd4bf 120%);
+  background: linear-gradient(135deg, #1e75e5 0%, #1e75e5 55%, #2dd4bf 120%);
   box-shadow:
-    0 12px 28px rgba(15, 118, 110, 0.28),
+    0 12px 28px rgba(30, 117, 229, 0.28),
     0 1px 0 rgba(255, 255, 255, 0.25) inset;
   transition:
     transform 0.2s ease,
@@ -235,7 +236,7 @@
 .submit:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow:
-    0 16px 36px rgba(15, 118, 110, 0.34),
+    0 16px 36px rgba(30, 117, 229, 0.34),
     0 1px 0 rgba(255, 255, 255, 0.25) inset;
   filter: brightness(1.03);
 }
@@ -253,7 +254,7 @@
   outline: none;
   box-shadow:
     var(--login-focus),
-    0 12px 28px rgba(15, 118, 110, 0.28);
+    0 12px 28px rgba(30, 117, 229, 0.28);
 }
 
 .spinner {
@@ -378,7 +379,7 @@
 
 .info {
   background: #f0fdfa;
-  color: #0f766e;
+  color: #1e75e5;
   border: 1px solid #99f6e4;
 }
 

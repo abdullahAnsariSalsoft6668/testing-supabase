@@ -1,60 +1,83 @@
 :root {
-  /* Brand */
-  --primary: #0f766e;
-  --secondary: #14b8a6;
-  --accent: #38bdf8;
-  --teal: #0f766e;
-  --teal-dark: #0b7285;
-  --teal-light: #14b8a6;
-  --teal-surface: #f0fdfa;
+  /* Clinic light — lime = brand blue, olive = surfaces, cream = body text */
+  --lime-main: #1e75e5;
+  --lime-dark: #155cb8;
+  --lime-highlight: #e8f1fc;
+  --lime-surface: rgba(30, 117, 229, 0.12);
 
-  /* Semantic */
-  --success: #22c55e;
-  --success-surface: #f0fdf4;
-  --warning: #f59e0b;
-  --warning-surface: #fffbeb;
-  --danger: #ef4444;
-  --danger-surface: #fef2f2;
-  --green: #22c55e;
-  --green-surface: #f0fdf4;
-  --sky: #e0f2fe;
-  --sky-accent: #38bdf8;
-  --pending: #f59e0b;
-  --error: #ef4444;
+  --olive-dark: #ffffff;
+  --olive-main: #eaf0f8;
+  --olive-deeper: #f4f7fb;
+  --olive-muted: #9aa3af;
+
+  --cream: #1a1d26;
+  --ink: #ffffff;
+
+  /* Brand aliases (legacy var names) */
+  --primary: var(--lime-main);
+  --secondary: var(--lime-dark);
+  --accent: #7eb0f0;
+  --teal: var(--lime-main);
+  --teal-dark: var(--lime-dark);
+  --teal-light: #7eb0f0;
+  --teal-surface: var(--lime-surface);
+
+  /* Semantic / medical */
+  --success: #2fa36b;
+  --success-surface: rgba(47, 163, 107, 0.12);
+  --warning: #f5b942;
+  --warning-surface: rgba(245, 185, 66, 0.12);
+  --danger: #e85d4c;
+  --danger-surface: rgba(232, 93, 76, 0.12);
+  --emergency: #d64545;
+  --green: var(--success);
+  --green-surface: var(--success-surface);
+  --sky: var(--lime-highlight);
+  --sky-accent: var(--lime-main);
+  --pending: var(--warning);
+  --error: var(--danger);
 
   /* Surfaces */
-  --screen: #f8fafc;
-  --card: #ffffff;
-  --sidebar: #0b7285;
-  --elevated: rgba(255, 255, 255, 0.78);
-  --overlay: rgba(15, 23, 42, 0.45);
+  --screen: var(--olive-deeper);
+  --card: var(--olive-dark);
+  --sidebar: var(--olive-dark);
+  --elevated: rgba(255, 255, 255, 0.92);
+  --overlay: rgba(26, 29, 38, 0.55);
 
   /* Text */
-  --text: #0f172a;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --text-on-brand: #ffffff;
+  --text: var(--cream);
+  --text-secondary: #6b7280;
+  --text-muted: #8a9199;
+  --text-on-brand: var(--ink);
 
   /* Lines */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.12);
 
-  /* Radius — design system */
+  /* Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-input: 18px;
-  --radius-xl: 24px;
+  --radius-input: 16px;
+  --radius-card: 20px;
+  --radius-xl: 20px;
   --radius-2xl: 28px;
+  --radius-button: 16px;
+  --radius-pill: 9999px;
 
   /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-card: 0 4px 24px rgba(15, 23, 42, 0.06);
-  --shadow-soft: 0 12px 40px rgba(15, 118, 110, 0.1);
-  --shadow-float: 0 20px 50px rgba(15, 23, 42, 0.08);
-  --shadow-glow: 0 0 0 4px rgba(15, 118, 110, 0.14);
+  --shadow-xs: 0 1px 2px rgba(26, 29, 38, 0.04);
+  --shadow-card: 0 8px 16px rgba(26, 29, 38, 0.08);
+  --shadow-button: 0 6px 10px rgba(30, 117, 229, 0.22);
+  --shadow-soft: 0 12px 40px rgba(26, 29, 38, 0.06);
+  --shadow-float: 0 20px 50px rgba(26, 29, 38, 0.08);
+  --shadow-glow: 0 0 0 4px rgba(30, 117, 229, 0.14);
 
-  /* Spacing scale (8px) */
+  /* Gradients */
+  --gradient-screen: linear-gradient(180deg, #f4f7fb 0%, #ffffff 100%);
+  --gradient-primary: linear-gradient(135deg, #e8f1fc 0%, #1e75e5 50%, #155cb8 100%);
+
+  /* Spacing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -64,7 +87,8 @@
   --space-7: 40px;
   --space-8: 48px;
 
-  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'SF Pro Display', 'Inter', sans-serif;
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'SF Pro Display', sans-serif;
+  --font-display: 'Rufina', 'Times New Roman', serif;
   --sidebar-w: 272px;
   --sidebar-collapsed: 84px;
   --topbar-h: 64px;
@@ -72,26 +96,28 @@
   --duration: 220ms;
 
   /* Shimmer / skeleton */
-  --shimmer-base: #e8eef3;
-  --shimmer-highlight: #f7fafc;
-  --shimmer-mid: #e2ebf1;
+  --shimmer-base: #f4f7fb;
+  --shimmer-highlight: #e8eef5;
+  --shimmer-mid: #e8f1fc;
 }
 
 [data-theme='dark'] {
-  --screen: #0b1220;
-  --card: #111827;
-  --elevated: rgba(17, 24, 39, 0.82);
-  --text: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border: #1e293b;
-  --border-strong: #334155;
-  --teal-surface: rgba(15, 118, 110, 0.18);
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --screen: #111827;
+  --card: #1a1d26;
+  --sidebar: #1a1d26;
+  --elevated: rgba(26, 29, 38, 0.92);
+  --text: #f4f7fb;
+  --text-secondary: #9aa3af;
+  --text-muted: #6b7280;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --olive-main: rgba(255, 255, 255, 0.06);
+  --olive-deeper: rgba(255, 255, 255, 0.04);
+  --lime-surface: rgba(30, 117, 229, 0.18);
+  --shadow-card: 0 8px 16px rgba(0, 0, 0, 0.35);
   --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.4);
   --shadow-float: 0 20px 50px rgba(0, 0, 0, 0.45);
   --overlay: rgba(0, 0, 0, 0.55);
-  --sidebar: #064e4a;
   --shimmer-base: #1e293b;
   --shimmer-highlight: #334155;
   --shimmer-mid: #243044;
@@ -153,25 +179,22 @@ textarea {
 }
 
 ::selection {
-  background: rgba(15, 118, 110, 0.18);
+  background: rgba(30, 117, 229, 0.18);
 }
 
 .app-mesh {
   background:
-    radial-gradient(1100px 560px at 8% -8%, rgba(20, 184, 166, 0.14), transparent 55%),
-    radial-gradient(900px 480px at 100% 0%, rgba(56, 189, 248, 0.1), transparent 50%),
-    radial-gradient(700px 400px at 80% 100%, rgba(15, 118, 110, 0.08), transparent 45%),
-    var(--screen);
+    radial-gradient(900px 480px at 8% -8%, rgba(30, 117, 229, 0.06), transparent 55%),
+    radial-gradient(700px 400px at 100% 0%, rgba(232, 241, 252, 0.8), transparent 50%),
+    var(--gradient-screen);
 }
 
 [data-theme='dark'] .app-mesh {
   background:
-    radial-gradient(900px 500px at 10% 0%, rgba(20, 184, 166, 0.12), transparent 55%),
-    radial-gradient(700px 400px at 100% 10%, rgba(56, 189, 248, 0.08), transparent 50%),
+    radial-gradient(900px 500px at 10% 0%, rgba(30, 117, 229, 0.12), transparent 55%),
     var(--screen);
 }
 
-/* Utility */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -182,4 +205,11 @@ textarea {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.display-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }

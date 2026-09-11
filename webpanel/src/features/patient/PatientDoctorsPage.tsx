@@ -68,7 +68,7 @@ export function PatientDoctorsPage() {
         slot_id: selectedSlot.id,
         appointment_date: selectedSlot.appointment_date,
         appointment_time: selectedSlot.start_time,
-        notes: 'Booked via CareHub web',
+        notes: 'Booked via Mediqo web',
       });
       setMessage('Appointment requested. Check My visits.');
       const all = await listSlots(selected.id);

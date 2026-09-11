@@ -1,14 +1,16 @@
-import { LinearTransition } from 'react-native-reanimated';
-
-export const MOTION_DURATION = {
-    instant: 0,
-    fast: 0,
-    normal: 0,
-    slow: 0,
-} as const;
-
-export const MOTION_SPRING = {
-    gentle: { damping: 1, stiffness: 1, mass: 1, overshootClamping: true },
-} as const;
-
-export const LAYOUT_TRANSITION = LinearTransition.duration(0);
+export {
+    MOTION_DURATION,
+    MOTION_SPRING,
+    MOTION_EASE_OUT,
+    LAYOUT_TRANSITION,
+    PRESS_SCALE_DEFAULT,
+    PRESS_SCALE_CHIP,
+    PRESS_SCALE_QUICK_ACTION,
+    SELECT_POP_SCALE,
+    LIST_ITEM_ENTER,
+    SKELETON_EXIT_MS,
+    CONTENT_ENTER_TRANSLATE,
+    AUTH_STAGGER_STEP_MS,
+    AUTH_STAGGER_TRANSLATE,
+    PILL_REFRESH,
+} from '@/styles/motion';

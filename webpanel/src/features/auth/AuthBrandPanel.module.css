@@ -1,10 +1,10 @@
 .brand {
-  --login-primary: #0f766e;
-  --login-secondary: #14b8a6;
-  --login-accent: #38bdf8;
-  --login-text: #0f172a;
-  --login-muted: #64748b;
-  --login-bg: #f8fafc;
+  --login-primary: #1e75e5;
+  --login-secondary: #155cb8;
+  --login-accent: #7eb0f0;
+  --login-text: #1a1d26;
+  --login-muted: #6b7280;
+  --login-bg: #f4f7fb;
 
   position: relative;
   isolation: isolate;
@@ -14,9 +14,9 @@
   justify-content: center;
   padding: clamp(1.5rem, 4vw, 3.5rem);
   background:
-    radial-gradient(900px 520px at 12% 18%, rgba(20, 184, 166, 0.18), transparent 58%),
+    radial-gradient(900px 520px at 12% 18%, rgba(30, 117, 229, 0.18), transparent 58%),
     radial-gradient(700px 480px at 88% 12%, rgba(56, 189, 248, 0.16), transparent 55%),
-    radial-gradient(600px 400px at 70% 88%, rgba(15, 118, 110, 0.12), transparent 50%),
+    radial-gradient(600px 400px at 70% 88%, rgba(30, 117, 229, 0.12), transparent 50%),
     linear-gradient(160deg, #f8fafc 0%, #eefcf9 45%, #f0f9ff 100%);
   color: var(--login-text);
   min-height: 100%;
@@ -37,7 +37,7 @@
   height: 280px;
   top: -60px;
   left: -40px;
-  background: rgba(20, 184, 166, 0.35);
+  background: rgba(30, 117, 229, 0.35);
 }
 
 .blobB {
@@ -53,7 +53,7 @@
   height: 220px;
   bottom: 8%;
   left: 18%;
-  background: rgba(15, 118, 110, 0.22);
+  background: rgba(30, 117, 229, 0.22);
 }
 
 .gridGlow {
@@ -62,8 +62,8 @@
   z-index: 0;
   opacity: 0.35;
   background-image:
-    linear-gradient(rgba(15, 118, 110, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 118, 110, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(30, 117, 229, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 117, 229, 0.04) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse at 40% 40%, black 20%, transparent 75%);
 }
@@ -90,10 +90,8 @@
   font-size: 1.65rem;
   font-weight: 800;
   color: white;
-  background: linear-gradient(145deg, #0f766e 0%, #14b8a6 55%, #38bdf8 140%);
-  box-shadow:
-    0 12px 28px rgba(15, 118, 110, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-button);
 }
 
 .logoName {
@@ -122,17 +120,18 @@
   text-transform: uppercase;
   color: var(--login-primary);
   background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(15, 118, 110, 0.14);
+  border: 1px solid rgba(30, 117, 229, 0.14);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(15, 118, 110, 0.06);
+  box-shadow: 0 4px 16px rgba(30, 117, 229, 0.06);
   margin-bottom: 1.15rem;
 }
 
 .headline {
   margin: 0;
   font-size: clamp(2rem, 4.2vw, 3.15rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1.08;
   max-width: 12ch;
   color: var(--login-text);
@@ -252,8 +251,8 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(56, 189, 248, 0.12));
-  border-color: rgba(20, 184, 166, 0.25);
+  background: linear-gradient(135deg, rgba(30, 117, 229, 0.08), rgba(56, 189, 248, 0.12));
+  border-color: rgba(30, 117, 229, 0.25);
   color: var(--login-primary);
 }
 
@@ -275,13 +274,13 @@
 .bar {
   flex: 1;
   border-radius: 8px 8px 4px 4px;
-  background: linear-gradient(180deg, #14b8a6 0%, #0f766e 100%);
+  background: linear-gradient(180deg, #1e75e5 0%, #1e75e5 100%);
   opacity: 0.85;
   min-height: 12px;
 }
 
 .bar:nth-child(even) {
-  background: linear-gradient(180deg, #38bdf8 0%, #0f766e 100%);
+  background: linear-gradient(180deg, #38bdf8 0%, #1e75e5 100%);
   opacity: 0.7;
 }
 
@@ -312,7 +311,7 @@
   font-size: 0.65rem;
   font-weight: 800;
   color: white;
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  background: linear-gradient(135deg, #1e75e5, #1e75e5);
 }
 
 .avatarAlt {
@@ -404,8 +403,8 @@
   display: grid;
   place-items: center;
   color: white;
-  background: linear-gradient(145deg, #0f766e, #14b8a6);
-  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.28);
+  background: linear-gradient(145deg, #1e75e5, #1e75e5);
+  box-shadow: 0 12px 28px rgba(30, 117, 229, 0.28);
 }
 
 .orb1 {

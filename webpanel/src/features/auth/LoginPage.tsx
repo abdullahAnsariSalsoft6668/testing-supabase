@@ -63,7 +63,7 @@ export function LoginPage() {
     }
   }, []);
 
-  if (loading) return <FullPageLoader label="Preparing CareHub…" />;
+  if (loading) return <FullPageLoader label="Preparing Mediqo…" />;
 
   if (user) {
     const home =
@@ -128,7 +128,7 @@ export function LoginPage() {
             <header className={styles.cardHeader}>
               <h2>Welcome back</h2>
               <p className={styles.subtitle}>
-                Sign in to your CareHub hospital console — calm, clear, and secure.
+                Sign in to your Mediqo hospital console — calm, clear, and secure.
               </p>
             </header>
 
@@ -228,7 +228,7 @@ export function LoginPage() {
             </div>
 
             <p className={styles.create}>
-              New to CareHub? <Link to="/register">Create account</Link>
+              New to Mediqo? <Link to="/register">Create account</Link>
             </p>
           </form>
 

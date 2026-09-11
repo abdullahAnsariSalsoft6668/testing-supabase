@@ -132,7 +132,7 @@ export function AppShell() {
         <div className={styles.logo}>+</div>
         {!collapsed ? (
           <div className={styles.brandText}>
-            <div className={styles.brandName}>CareHub</div>
+            <div className={styles.brandName}>Mediqo</div>
             <div className={styles.brandSub}>{role.toLowerCase()} console</div>
           </div>
         ) : null}
@@ -190,7 +190,7 @@ export function AppShell() {
         </button>
         <div className={styles.mobileBrand}>
           <span className={styles.mobileLogo}>+</span>
-          <span>CareHub</span>
+          <span>Mediqo</span>
         </div>
         <button
           type="button"
@@ -260,7 +260,7 @@ export function AppShell() {
             <Search size={16} aria-hidden />
             <input
               type="search"
-              placeholder="Search CareHub…"
+              placeholder="Search Mediqo…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search"

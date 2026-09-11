@@ -9,6 +9,7 @@ export { borders, spaces, heights } from '@/styles/sizes';
 export type { Borders, Spaces } from '@/styles/sizes';
 export { moderateScale, scale, verticalScale, width, height } from '@/styles/scaling';
 export { default as fontFamily } from '@/styles/fontFamily';
+export * from '@/styles/motion';
 export { homeStyles } from '@/styles/homeStyles';
 export type { HomeStyles } from '@/styles/homeStyles';
 export { tabScreenStyles } from '@/styles/tabScreenStyles';

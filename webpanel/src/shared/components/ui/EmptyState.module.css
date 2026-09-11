@@ -15,8 +15,8 @@
   place-items: center;
   margin-bottom: 0.35rem;
   color: var(--primary);
-  background: linear-gradient(145deg, rgba(15, 118, 110, 0.1), rgba(56, 189, 248, 0.12));
-  border: 1px solid rgba(15, 118, 110, 0.12);
+  background: var(--lime-surface);
+  border: 1px solid rgba(30, 117, 229, 0.12);
 }
 
 .title {

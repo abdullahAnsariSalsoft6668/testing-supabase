@@ -1,7 +1,7 @@
 .card {
   background: var(--card);
-  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: 1.15rem 1.25rem;
   height: fit-content;
@@ -19,7 +19,7 @@
 .glass {
   background: var(--elevated);
   backdrop-filter: blur(16px) saturate(1.15);
-  border-color: rgba(255, 255, 255, 0.55);
+  border-color: var(--border);
 }
 
 @media (max-width: 640px) {

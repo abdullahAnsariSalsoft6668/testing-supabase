@@ -27,7 +27,7 @@ function ErrorShell({
         <h1>{title}</h1>
         <p className={styles.desc}>{description}</p>
         <Link to="/" className={styles.cta}>
-          <Home size={16} /> Back to CareHub
+          <Home size={16} /> Back to Mediqo
         </Link>
       </motion.div>
     </div>

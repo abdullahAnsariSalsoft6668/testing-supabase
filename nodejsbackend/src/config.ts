@@ -43,4 +43,7 @@ export const config = {
   /** Fallback when Retell Test Audio does not send call.metadata (dashboard testing). */
   retellTestPatientId: env('RETELL_TEST_PATIENT_ID'),
   retellTestPatientEmail: env('RETELL_TEST_PATIENT_EMAIL', 'user1@mailinator.com'),
+  twilioAccountSid: env('TWILIO_ACCOUNT_SID'),
+  twilioAuthToken: env('TWILIO_AUTH_TOKEN'),
+  twilioFromNumber: env('TWILIO_FROM_NUMBER'),
 };

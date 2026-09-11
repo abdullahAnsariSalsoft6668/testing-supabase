@@ -14,11 +14,11 @@
 
 .control {
   width: 100%;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-input);
   padding: 0.8rem 1rem;
   min-height: 48px;
-  background: var(--card);
+  background: var(--olive-deeper);
   color: var(--text);
   outline: none;
   transition:
@@ -33,6 +33,7 @@
 
 .control:focus {
   border-color: var(--primary);
+  border-width: 1.5px;
   box-shadow: var(--shadow-glow);
 }
 

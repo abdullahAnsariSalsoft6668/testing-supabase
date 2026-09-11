@@ -109,7 +109,7 @@ const TextInputComp: React.FC<TextInputCompProps> = ({
             borderColor: hasError
                 ? Colors.error
                 : isFocused
-                  ? palette.purple.main
+                  ? palette.lime.main
                   : Colors.gray100,
             borderWidth: isFocused && !hasError ? 1.5 : 1,
         };

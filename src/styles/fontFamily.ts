@@ -1,11 +1,13 @@
-import { plusJakarta, brittiSans } from '@/assets/fonts';
+import { plusJakarta, rufina } from '@/assets/fonts';
 
-/** App-wide sans (Plus Jakarta Sans). Matches auth / form UI in designs. */
+/** Clinic light typography families. */
 export default {
     regular: plusJakarta.regular,
     bold: plusJakarta.bold,
-    light: plusJakarta.regular,
-    /** Britti Sans Trial — form labels on dark auth screens */
-    label: brittiSans.regular,
-    labelSemiBold: brittiSans.semiBold,
+    extraBold: plusJakarta.extraBold,
+    display: rufina.bold,
+    displayRegular: rufina.regular,
+    /** Britti Sans Trial — legacy auth labels */
+    label: 'BrittiSansTrial-Regular',
+    labelSemiBold: 'BrittiSansTrial-Semibold',
 };

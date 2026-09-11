@@ -18,8 +18,13 @@ Fill in `nodejsbackend/.env` or root `.env`:
 | `RETELL_AGENT_ID` | Your voice agent id |
 | `EXPO_PUBLIC_SUPABASE_URL` | Same as mobile (auto-loaded from root `.env`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Required** secret/service_role key (not publishable). Without it RLS returns zero doctors to Retell tools. |
+| `TWILIO_ACCOUNT_SID` | Twilio Account SID (booking confirmation SMS) |
+| `TWILIO_AUTH_TOKEN` | Twilio Auth Token |
+| `TWILIO_FROM_NUMBER` | Twilio sender in E.164 (e.g. `+1…`) |
 
 Also run `supabase/migrations/021_retell_anon_read_approved_catalog.sql` in the SQL Editor if you temporarily use the publishable key.
+
+**Booking SMS:** After a successful book (Retell/Node, mobile, or webpanel), Node sends one SMS to the patient’s `users.phone` (E.164). Mobile/web call `POST /notify/booking-sms` — Node must be running (`yarn node:dev` or your hosted URL in `EXPO_PUBLIC_NODE_API_BASE_URL` / `VITE_NODE_API_BASE_URL`). Missing/invalid phone or Twilio errors are logged; booking still succeeds.
 
 ## Run
 
@@ -35,6 +40,7 @@ npm run dev
 - Create voice session: `POST /voice/session`
 - Legacy: `POST /calls/web` (same handler)
 - Retell tools: `POST /retell/tools/*`
+- Booking SMS notify: `POST /notify/booking-sms` `{ "appointmentId": "…" }`
 
 ## Retell dashboard — Custom Functions
 

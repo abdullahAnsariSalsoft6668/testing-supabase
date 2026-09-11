@@ -1,6 +1,7 @@
 import { getSupabase } from './supabase.js';
 import { displayName } from '../utils/displayName.js';
 import { formatErrorMessage } from '../utils/errors.js';
+import { sendBookingConfirmationSms } from './sms.js';
 
 const ACTIVE_STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED'] as const;
 
@@ -88,6 +89,12 @@ export async function bookAppointment(params: {
   if (!data) {
     throw new Error('Booking insert did not return a row. Check Supabase appointments table permissions.');
   }
+
+  // Fire-and-forget — never block or fail the book on SMS errors
+  void sendBookingConfirmationSms(String(data.id)).catch((err) => {
+    console.error('[appointments] booking SMS failed:', formatErrorMessage(err));
+  });
+
   return data;
 }
 

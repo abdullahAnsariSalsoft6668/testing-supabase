@@ -23,7 +23,7 @@ export function RegisterPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (loading) return <FullPageLoader label="Preparing CareHub…" />;
+  if (loading) return <FullPageLoader label="Preparing Mediqo…" />;
 
   if (user) {
     const home =
@@ -52,7 +52,7 @@ export function RegisterPage() {
   return (
     <div className={loginStyles.page}>
       <AuthBrandPanel
-        badge="Join CareHub"
+        badge="Join Mediqo"
         headline="Create your health workspace."
         description="Patients book visits. Doctors manage schedules. Admins are invited by your hospital separately."
       />

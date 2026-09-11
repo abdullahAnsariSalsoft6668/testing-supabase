@@ -17,11 +17,11 @@
   0%,
   100% {
     transform: scale(1);
-    box-shadow: 0 8px 24px rgba(11, 114, 133, 0.25);
+    box-shadow: 0 8px 24px rgba(30, 117, 229, 0.22);
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 12px 32px rgba(11, 114, 133, 0.35);
+    box-shadow: 0 12px 32px rgba(30, 117, 229, 0.32);
   }
 }
 
@@ -89,7 +89,7 @@
   font-size: 1.75rem;
   font-weight: 800;
   color: white;
-  background: linear-gradient(135deg, var(--teal-dark), var(--teal-light));
+  background: var(--gradient-primary);
   animation: logoPulse 1.8s ease-in-out infinite;
 }
 

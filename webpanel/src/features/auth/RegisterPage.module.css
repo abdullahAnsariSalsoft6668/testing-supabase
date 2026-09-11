@@ -11,7 +11,7 @@
 }
 
 .progressOn {
-  background: linear-gradient(90deg, #0f766e, #14b8a6);
+  background: linear-gradient(90deg, #1e75e5, #1e75e5);
 }
 
 .stepLabel {
@@ -38,7 +38,7 @@
   border-radius: 18px;
   border: 1.5px solid #e2e8f0;
   background: #fff;
-  color: #0f766e;
+  color: #1e75e5;
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -64,9 +64,9 @@
 }
 
 .roleActive {
-  border-color: #0f766e;
+  border-color: #1e75e5;
   background: #f0fdfa;
-  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+  box-shadow: 0 0 0 4px rgba(30, 117, 229, 0.12);
 }
 
 .stack {

@@ -5,6 +5,7 @@ import { patientExists } from './services/patients';
 import callsRouter from './routes/calls';
 import retellToolsRouter from './routes/retellTools';
 import voiceRouter from './routes/voice';
+import notifyRouter from './routes/notify';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(
 app.use(express.json());
 app.use('/voice', voiceRouter);
 app.use('/calls', callsRouter);
+app.use('/notify', notifyRouter);
 
 app.get('/health', (_req, res) => {
   res.json({
@@ -38,6 +40,9 @@ app.get('/health', (_req, res) => {
     supabaseUsesServiceRole: config.supabaseUsesServiceRole,
     retellTestPatientId: Boolean(config.retellTestPatientId),
     retellTestPatientEmail: Boolean(config.retellTestPatientEmail),
+    twilioConfigured: Boolean(
+      config.twilioAccountSid && config.twilioAuthToken && config.twilioFromNumber,
+    ),
   });
 });
 
