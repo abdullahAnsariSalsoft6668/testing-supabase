@@ -61,12 +61,14 @@ Create `webpanel/.env` (same project as the mobile app):
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_publishable_or_anon_key
+VITE_NODE_API_BASE_URL=http://127.0.0.1:3001
 ```
 
 | Variable | Description |
 |----------|-------------|
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Anon / publishable key (never commit the service role key here) |
+| `VITE_NODE_API_BASE_URL` | Node backend URL for booking SMS notify (`POST /notify/booking-sms`). Node must be running. |
 
 Restart the Vite dev server after changing env vars.
 

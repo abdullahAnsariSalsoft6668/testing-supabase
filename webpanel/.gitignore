@@ -18,9 +18,9 @@ dist-ssr
 .cache
 
 # Env (keep .env.example)
-.env
-.env.*
-!.env.example
+# .env
+# .env.*
+# !.env.example
 
 # Editor / OS
 .vscode/*

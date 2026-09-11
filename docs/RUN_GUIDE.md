@@ -96,9 +96,16 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_secret   # NOT the publishable/anon 
 PORT=3001
 CORS_ORIGINS=*
 VERIFY_RETELL_SIGNATURE=false           # use false for local dev; true in production
+
+# Twilio — booking confirmation SMS (optional; book still works if unset)
+TWILIO_ACCOUNT_SID=ACxxxxxxxx
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_FROM_NUMBER=+1xxxxxxxxxx
 ```
 
 > **Important:** `SUPABASE_SERVICE_ROLE_KEY` must be the **service_role** secret from Supabase → Settings → API.
+>
+> **SMS:** Node must be running for mobile/web booking SMS (`POST /notify/booking-sms`). Patient `users.phone` should be E.164 (`+…`). On Twilio trial, verify the recipient number in the Twilio console.
 
 After changing `.env`, restart Metro with cache reset:
 

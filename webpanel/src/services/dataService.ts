@@ -177,6 +177,19 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
   return data as Appointment;
 }
 
+function notifyBookingSms(appointmentId: string) {
+  const baseUrl = (import.meta.env.VITE_NODE_API_BASE_URL as string | undefined)?.trim().replace(/\/$/, '') ?? '';
+  if (!baseUrl || !appointmentId) return;
+
+  void fetch(`${baseUrl}/notify/booking-sms`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ appointmentId }),
+  }).catch((err) => {
+    console.warn('[appointment] booking SMS notify failed:', err);
+  });
+}
+
 export async function bookAppointment(payload: {
   patient_id: string;
   doctor_id: string;
@@ -191,6 +204,9 @@ export async function bookAppointment(payload: {
     .select()
     .single();
   if (error) throw error;
+
+  notifyBookingSms(String(data.id));
+
   return data as Appointment;
 }
 
