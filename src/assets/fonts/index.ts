@@ -5,6 +5,12 @@ export type FontWeights = {
   extraBold: string;
 };
 
+/** Rufina — display / page titles (link .ttf files via yarn fonts). */
+export const rufina = {
+    regular: 'Rufina-Regular',
+    bold: 'Rufina-Bold',
+} as const;
+
 /** Plus Jakarta Sans — default UI / body */
 export const plusJakarta: FontWeights = {
   regular: 'PlusJakartaSans-Regular',

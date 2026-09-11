@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node -e \"const fs=require('fs'); if(!fs.existsSync('.env')&&fs.existsSync('.env.example')){console.warn('\\n⚠️  Copy webpanel/.env.example to webpanel/.env and set Supabase keys.\\n');}\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",

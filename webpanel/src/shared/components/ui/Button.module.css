@@ -4,11 +4,12 @@
   justify-content: center;
   gap: 0.5rem;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-button);
   padding: 0.7rem 1.2rem;
   font-weight: 700;
   font-size: 0.9rem;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
   transition:
     box-shadow var(--duration) var(--ease-out),
@@ -27,46 +28,52 @@
 }
 
 .primary {
-  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 70%);
-  color: white;
-  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.28);
+  background: var(--gradient-primary);
+  color: var(--ink);
+  box-shadow: var(--shadow-button);
 }
 
 .primary:hover:not(:disabled) {
-  box-shadow: 0 14px 32px rgba(15, 118, 110, 0.36);
-  filter: brightness(1.03);
+  box-shadow: 0 8px 18px rgba(30, 117, 229, 0.32);
+  filter: brightness(1.02);
 }
 
 .secondary {
-  background: var(--card);
-  color: var(--primary);
-  border: 1.5px solid rgba(15, 118, 110, 0.22);
+  background: var(--olive-deeper);
+  color: var(--text);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-xs);
 }
 
 .secondary:hover:not(:disabled) {
-  background: var(--teal-surface);
+  background: var(--olive-main);
 }
 
 .ghost {
   background: transparent;
   color: var(--text-secondary);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .ghost:hover:not(:disabled) {
-  background: var(--screen);
+  background: var(--olive-main);
   color: var(--text);
 }
 
 .danger {
   background: var(--danger-surface);
   color: var(--danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(232, 93, 76, 0.2);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .soft {
-  background: var(--teal-surface);
+  background: var(--lime-surface);
   color: var(--primary);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .spinner {

@@ -1,68 +1,117 @@
-/** Professional health / hospital design tokens. */
+/**
+ * Clinic light design tokens.
+ * Naming traps (aliases — not literal colors):
+ * - olive.* = white / blue-gray clinic surfaces
+ * - lime.* = brand blue (#1E75E5)
+ * - cream = charcoal body text on white (#1A1D26)
+ * - ink = white text/icons on blue CTAs
+ */
 export const palette = {
+    lime: {
+        main: '#1E75E5',
+        dark: '#155CB8',
+        highlight: '#E8F1FC',
+        surface: 'rgba(30, 117, 229, 0.12)',
+        badge: '#1E75E5',
+    },
+    olive: {
+        dark: '#FFFFFF',
+        main: '#EAF0F8',
+        deeper: '#F4F7FB',
+        surface: '#F4F7FB',
+        card: '#FFFFFF',
+        muted: '#9AA3AF',
+        light: '#7EB0F0',
+        gridOverlay: 'rgba(30, 117, 229, 0.06)',
+    },
+    cream: '#1A1D26',
+    ink: '#FFFFFF',
+    onCard: {
+        text: '#1A1D26',
+        textSecondary: '#6B7280',
+        textMuted: '#8A9199',
+        icon: '#5B6470',
+        border: 'rgba(15, 23, 42, 0.08)',
+    },
+    medical: {
+        success: '#2FA36B',
+        successDark: '#1E7A4E',
+        error: '#E85D4C',
+        warning: '#F5B942',
+        emergency: '#D64545',
+        info: '#1E75E5',
+        stat: '#C45C4A',
+    },
+    home: {
+        greeting: '#7A8490',
+    },
+    /** @deprecated Use lime — teal alias for gradual migration */
     teal: {
-        main: '#0B7285',
-        dark: '#095C6B',
-        light: '#15AABF',
-        surface: '#E6FCF5',
-        gridOverlay: 'rgba(255, 255, 255, 0.06)',
+        main: '#1E75E5',
+        dark: '#155CB8',
+        light: '#7EB0F0',
+        surface: 'rgba(30, 117, 229, 0.12)',
+        gridOverlay: 'rgba(30, 117, 229, 0.06)',
     },
+    /** @deprecated Use medical.success */
     green: {
-        main: '#2F9E44',
-        dark: '#2B8A3E',
-        light: '#51CF66',
-        surface: '#EBFBEE',
+        main: '#2FA36B',
+        dark: '#1E7A4E',
+        light: '#2FA36B',
+        surface: 'rgba(47, 163, 107, 0.12)',
     },
+    /** @deprecated Use olive / lime.highlight */
     sky: {
-        main: '#E7F5FF',
-        border: '#A5D8FF',
-        accent: '#1864AB',
+        main: '#E8F1FC',
+        border: 'rgba(15, 23, 42, 0.08)',
+        accent: '#1E75E5',
     },
     neutral: {
         white: '#FFFFFF',
         black: '#000000',
-        text: '#1E293B',
-        textSecondary: '#64748B',
-        textMuted: '#94A3B8',
-        border: '#E2E8F0',
+        text: '#1A1D26',
+        textSecondary: '#6B7280',
+        textMuted: '#8A9199',
+        border: 'rgba(15, 23, 42, 0.08)',
         background: '#FFFFFF',
-        screen: '#F8FAFC',
+        screen: '#FFFFFF',
         card: '#FFFFFF',
-        gray50: '#F8FAFC',
-        gray100: '#F1F5F9',
-        gray200: '#E2E8F0',
-        gray300: '#CBD5E1',
-        gray400: '#64748B',
-        gray500: '#475569',
-        cream: '#E7F5FF',
+        gray50: '#F4F7FB',
+        gray100: '#EAF0F8',
+        gray200: '#EAF0F8',
+        gray300: '#9AA3AF',
+        gray400: '#6B7280',
+        gray500: '#5B6470',
+        cream: '#1A1D26',
     },
     status: {
-        pending: '#E67700',
-        confirmed: '#2F9E44',
-        completed: '#1864AB',
-        cancelled: '#C92A2A',
-        noShow: '#868E96',
-        error: '#C92A2A',
-        warning: '#E67700',
-        info: '#1864AB',
+        pending: '#F5B942',
+        confirmed: '#2FA36B',
+        completed: '#1E75E5',
+        cancelled: '#E85D4C',
+        noShow: '#9AA3AF',
+        error: '#E85D4C',
+        warning: '#F5B942',
+        info: '#1E75E5',
     },
-    /** Legacy aliases for unused grocery components */
+    /** @deprecated Use lime — legacy grocery alias */
     purple: {
-        main: '#0B7285',
-        dark: '#095C6B',
-        light: '#15AABF',
-        surface: '#E6FCF5',
-        gridOverlay: 'rgba(255, 255, 255, 0.06)',
+        main: '#1E75E5',
+        dark: '#155CB8',
+        light: '#7EB0F0',
+        surface: 'rgba(30, 117, 229, 0.12)',
+        gridOverlay: 'rgba(30, 117, 229, 0.06)',
     },
+    /** @deprecated Use lime */
     yellow: {
-        main: '#0B7285',
-        dark: '#095C6B',
-        highlight: '#15AABF',
-        badge: '#E6FCF5',
+        main: '#1E75E5',
+        dark: '#155CB8',
+        highlight: '#E8F1FC',
+        badge: '#1E75E5',
     },
     magenta: {
-        main: '#1864AB',
-        stat: '#1864AB',
+        main: '#1E75E5',
+        stat: '#C45C4A',
     },
 } as const;
 

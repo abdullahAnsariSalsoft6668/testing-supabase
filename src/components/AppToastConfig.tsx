@@ -12,13 +12,11 @@ import type { ToastConfig, ToastConfigParams } from 'react-native-toast-message'
 import { Colors } from '@/styles/colors';
 import fontFamily from '@/styles/fontFamily';
 import { moderateScale } from '@/styles/scaling';
+import { theme } from '@/styles/theme';
 
-/** Optional `props` passed through `Toast.show({ props })` or `meta.toastProps` (API layer). */
 export type AppToastCustomProps = {
   leadingIcon?: 'auto' | 'none' | 'success' | 'error' | 'info';
-  /** Merged into outer card (e.g. margin tweaks) */
   containerStyle?: StyleProp<ViewStyle>;
-  /** e.g. `'api'` when shown from `showGlobalApiToasts` */
   source?: string;
 };
 
@@ -41,9 +39,9 @@ function resolveKind(
 }
 
 const ACCENT: Record<Kind, string> = {
-  success: Colors.success,
-  error: Colors.error,
-  info: Colors.info,
+  success: Colors.medical.success,
+  error: Colors.medical.error,
+  info: Colors.medical.info,
 };
 
 function LeadingIcon({ kind, hide }: { kind: Kind; hide: boolean }) {
@@ -108,15 +106,10 @@ const styles = StyleSheet.create({
     marginHorizontal: moderateScale(14),
     paddingVertical: moderateScale(12),
     paddingHorizontal: moderateScale(14),
-    borderRadius: moderateScale(14),
-    backgroundColor: Colors.white,
+    borderRadius: theme.components.toast.borderRadius,
+    backgroundColor: theme.components.toast.backgroundColor,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Colors.gray200,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 6,
+    borderColor: theme.components.toast.borderColor,
   },
   leadingWrap: {
     width: moderateScale(28),
@@ -135,10 +128,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   leadingGlyph: {
-    color: Colors.white,
+    color: Colors.ink,
     fontSize: moderateScale(11),
     fontFamily: fontFamily.bold,
-    marginTop: 0,
   },
   textBlock: {
     flex: 1,
@@ -146,15 +138,15 @@ const styles = StyleSheet.create({
   },
   text1: {
     fontFamily: fontFamily.bold,
-    fontSize: moderateScale(15),
-    color: Colors.black,
-    letterSpacing: 0.15,
+    fontSize: moderateScale(14),
+    color: Colors.cream,
+    letterSpacing: 0.1,
   },
   text2: {
     marginTop: moderateScale(4),
     fontFamily: fontFamily.regular,
-    fontSize: moderateScale(13),
-    color: Colors.gray500,
+    fontSize: moderateScale(12),
+    color: Colors.textSecondary,
     lineHeight: moderateScale(18),
   },
 });

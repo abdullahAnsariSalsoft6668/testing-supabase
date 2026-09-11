@@ -18,7 +18,7 @@ type Props = {
 export function AuthBrandPanel({
   badge = 'Hospital Console',
   headline = 'Care that feels calm, clear, and close.',
-  description = 'CareHub unifies admins, clinicians, and patients in one serene workspace — schedules, visits, and hospital operations with enterprise clarity.',
+  description = 'Mediqo unifies admins, clinicians, and patients in one calm workspace — schedules, visits, and hospital operations with clinic clarity.',
 }: Props) {
   return (
     <aside className={styles.brand} aria-hidden={false}>
@@ -38,7 +38,7 @@ export function AuthBrandPanel({
             <span>+</span>
           </div>
           <div>
-            <div className={styles.logoName}>CareHub</div>
+            <div className={styles.logoName}>Mediqo</div>
             <div className={styles.logoTag}>Healthcare OS</div>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function AuthBrandPanel({
               <span />
               <span />
               <span />
-              <div className={styles.mockTitle}>CareHub · Live board</div>
+              <div className={styles.mockTitle}>Mediqo · Live board</div>
             </div>
             <div className={styles.mockBody}>
               <div className={styles.mockStats}>

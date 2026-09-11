@@ -1,39 +1,46 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import TextComp from '@/components/TextComp';
 import StatusBadge from '@/components/health/StatusBadge';
-import { theme } from '@/styles/theme';
+import ScalePressable from '@/components/ui/ScalePressable';
+import { listItemEntering } from '@/hooks/animations/listMotion';
 import { moderateScale } from '@/styles/scaling';
+import { theme } from '@/styles/theme';
+import { typography } from '@/styles/typography';
 import type { Appointment } from '@/types/database';
 
 type AppointmentCardProps = {
     appointment: Appointment;
     subtitle?: string;
+    index?: number;
     onPress?: () => void;
 };
 
-const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment, subtitle, onPress }) => {
+const AppointmentCard = ({ appointment, subtitle, index = 0, onPress }: AppointmentCardProps) => {
     const date = appointment.appointment_date;
     const time = appointment.appointment_time?.slice(0, 5) ?? '';
 
     return (
-        <Pressable style={styles.card} onPress={onPress}>
-            <View style={styles.dateCol}>
-                <TextComp text={date.split('-')[2]} style={styles.day} />
-                <TextComp text={date.slice(5, 7)} style={styles.month} />
-            </View>
-            <View style={styles.info}>
-                <View style={styles.row}>
-                    <TextComp text={subtitle ?? 'Appointment'} style={styles.title} />
-                    <StatusBadge status={appointment.status} />
+        <ScalePressable onPress={onPress}>
+            <Animated.View entering={listItemEntering(index)} style={styles.card}>
+                <View style={styles.dateCol}>
+                    <TextComp text={date.split('-')[2]} style={styles.day} />
+                    <TextComp text={date.slice(5, 7)} style={styles.month} />
                 </View>
-                <TextComp text={`${date} at ${time}`} style={styles.meta} />
-                {appointment.notes ? (
-                    <TextComp text={appointment.notes} style={styles.notes} numberOfLines={1} />
-                ) : null}
-            </View>
-        </Pressable>
+                <View style={styles.info}>
+                    <View style={styles.row}>
+                        <TextComp text={subtitle ?? 'Appointment'} style={typography.label} />
+                        <StatusBadge status={appointment.status} />
+                    </View>
+                    <TextComp text={`${date} at ${time}`} style={styles.meta} />
+                    {appointment.notes ? (
+                        <TextComp text={appointment.notes} style={styles.notes} numberOfLines={1} />
+                    ) : null}
+                </View>
+            </Animated.View>
+        </ScalePressable>
     );
 };
 
@@ -41,7 +48,7 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
         backgroundColor: theme.colors.card.background,
-        borderRadius: theme.radius.card,
+        borderRadius: theme.radius.appointmentCard,
         padding: moderateScale(14),
         marginBottom: moderateScale(12),
         borderWidth: 1,
@@ -52,18 +59,26 @@ const styles = StyleSheet.create({
         width: moderateScale(52),
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.palette.teal.surface,
-        borderRadius: moderateScale(10),
+        backgroundColor: theme.palette.lime.surface,
+        borderRadius: moderateScale(12),
         marginRight: moderateScale(12),
         paddingVertical: moderateScale(8),
     },
-    day: { fontSize: moderateScale(20), fontWeight: '700', color: theme.palette.teal.main },
-    month: { fontSize: moderateScale(11), color: theme.palette.teal.dark },
+    day: {
+        ...typography.stat,
+        fontSize: moderateScale(20),
+        lineHeight: moderateScale(24),
+        color: theme.palette.lime.main,
+    },
+    month: {
+        ...typography.bodySmall,
+        color: theme.palette.lime.dark,
+        fontWeight: '700',
+    },
     info: { flex: 1 },
     row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
-    title: { fontSize: moderateScale(14), fontWeight: '600', flex: 1, color: theme.colors.text.primary },
-    meta: { fontSize: moderateScale(12), color: theme.colors.text.secondary, marginTop: 6 },
-    notes: { fontSize: moderateScale(12), color: theme.colors.text.muted, marginTop: 4 },
+    meta: { ...typography.bodySmall, marginTop: moderateScale(6) },
+    notes: { ...typography.bodySmall, color: theme.colors.text.muted, marginTop: moderateScale(4) },
 });
 
 export default AppointmentCard;

@@ -26,7 +26,7 @@ export function Spinner({ label = 'Loading' }: { label?: string }) {
   );
 }
 
-export function FullPageLoader({ label = 'Loading CareHub…' }: { label?: string }) {
+export function FullPageLoader({ label = 'Loading Mediqo…' }: { label?: string }) {
   return (
     <div className={`app-mesh ${styles.fullPage}`}>
       <div className={styles.fullPageCard}>

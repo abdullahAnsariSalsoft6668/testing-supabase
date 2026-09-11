@@ -15,13 +15,14 @@
 .heroCard {
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-card);
   padding: 1.35rem 1.4rem;
   background:
-    radial-gradient(600px 240px at 100% 0%, rgba(56, 189, 248, 0.22), transparent 55%),
-    linear-gradient(135deg, #0f766e 0%, #0b7285 55%, #0d9488 100%);
-  color: white;
-  box-shadow: var(--shadow-soft);
+    radial-gradient(600px 240px at 100% 0%, rgba(232, 241, 252, 0.9), transparent 55%),
+    var(--gradient-primary);
+  color: var(--ink);
+  box-shadow: var(--shadow-button);
+  border: 1px solid rgba(30, 117, 229, 0.12);
 }
 
 .heroCard h2 {
@@ -72,11 +73,11 @@
 
 .heroBtnSolid {
   background: white;
-  color: #0f766e;
+  color: var(--primary);
 }
 
 .heroBtnSolid:hover {
-  background: #f0fdfa;
+  background: var(--lime-highlight);
 }
 
 .sectionTitle {
@@ -144,7 +145,7 @@
 }
 
 .row:hover {
-  border-color: rgba(15, 118, 110, 0.25);
+  border-color: rgba(30, 117, 229, 0.25);
   box-shadow: var(--shadow-xs);
   transform: translateY(-1px);
 }

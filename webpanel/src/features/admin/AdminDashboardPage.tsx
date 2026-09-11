@@ -53,7 +53,7 @@ export function AdminDashboardPage() {
 
       <div className={styles.hero}>
         <div className={styles.heroCard}>
-          <h2>CareHub command center</h2>
+          <h2>Mediqo command center</h2>
           <p>
             Review pending clinicians, keep hospital catalogs current, and watch visit volume with a
             serene enterprise view.

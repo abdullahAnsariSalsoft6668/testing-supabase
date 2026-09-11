@@ -58,6 +58,7 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-event-listeners": "^1.0.7",
     "react-native-gesture-handler": "^2.30.0",
+    "react-native-haptic-feedback": "^3.0.0",
     "react-native-image-picker": "^7.1.2",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-modal": "^14.0.0-rc.1",

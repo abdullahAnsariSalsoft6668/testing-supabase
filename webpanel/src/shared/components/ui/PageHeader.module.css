@@ -19,8 +19,9 @@
 .title {
   margin: 0;
   font-size: clamp(1.35rem, 2.8vw, 1.75rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
   color: var(--text);
   line-height: 1.2;
 }

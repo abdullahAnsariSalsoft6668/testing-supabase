@@ -255,7 +255,7 @@ export function AdminHospitalsPage() {
           </>
         }
       >
-        This removes the hospital from CareHub. Related departments may be affected by database
+        This removes the hospital from Mediqo. Related departments may be affected by database
         rules.
       </Modal>
     </div>
