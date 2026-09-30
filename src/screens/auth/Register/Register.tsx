@@ -139,6 +139,20 @@ const Register = () => {
                                         <TextComp text={r === 'PATIENT' ? 'Patient' : 'Doctor'} />
                                     </Pressable>
                                 ))}
+                                <Pressable
+                                    onPress={() => navigation.navigate(routes.auth.hospitalApply)}
+                                    style={{
+                                        flex: 1,
+                                        paddingVertical: moderateScale(10),
+                                        borderRadius: moderateScale(10),
+                                        borderWidth: 1,
+                                        borderColor: palette.neutral.border,
+                                        backgroundColor: palette.neutral.white,
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <TextComp text="Hospital" />
+                                </Pressable>
                             </View>
                         </AuthStaggerItem>
                         <AuthTextInput

@@ -1,11 +1,13 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, Mail, Stethoscope, UserRound } from 'lucide-react';
+import { Building2, Eye, EyeOff, Lock, Mail, Stethoscope, UserRound } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
+import { homePath } from '@/features/auth/roleHome';
 import { AuthBrandPanel } from '@/features/auth/AuthBrandPanel';
 import { FullPageLoader } from '@/shared/components/ui/Shimmer';
-import type { UserRole } from '@/types/database';
+import { listHospitals } from '@/services/dataService';
+import type { Hospital, UserRole } from '@/types/database';
 import loginStyles from './LoginPage.module.css';
 import styles from './RegisterPage.module.css';
 
@@ -20,27 +22,48 @@ export function RegisterPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<RoleChoice>('PATIENT');
+  const [hospitalId, setHospitalId] = useState('');
+  const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (loading) return <FullPageLoader label="Preparing Mediqo…" />;
+  useEffect(() => {
+    void listHospitals()
+      .then((rows) => setHospitals(rows.filter((h) => !h.status || h.status === 'APPROVED')))
+      .catch(() => setHospitals([]));
+  }, []);
+
+  if (loading) return <FullPageLoader label="Preparing CareHub…" />;
 
   if (user) {
-    const home =
-      user.role === 'ADMIN' ? '/admin' : user.role === 'DOCTOR' ? '/doctor' : '/patient';
-    return <Navigate to={home} replace />;
+    return <Navigate to={homePath(user)} replace />;
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (step < 2) {
+      if (step === 1 && role === 'PATIENT' && !hospitalId) {
+        setError('Choose the hospital you belong to');
+        return;
+      }
+      setError('');
       setStep((s) => s + 1);
+      return;
+    }
+    if (role === 'PATIENT' && !hospitalId) {
+      setError('Choose the hospital you belong to');
       return;
     }
     setBusy(true);
     setError('');
     try {
-      await signUp({ email: email.trim(), password, fullName: fullName.trim(), role });
+      await signUp({
+        email: email.trim(),
+        password,
+        fullName: fullName.trim(),
+        role,
+        hospitalId: role === 'PATIENT' ? hospitalId : undefined,
+      });
       navigate('/login');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -52,9 +75,9 @@ export function RegisterPage() {
   return (
     <div className={loginStyles.page}>
       <AuthBrandPanel
-        badge="Join Mediqo"
+        badge="Join CareHub"
         headline="Create your health workspace."
-        description="Patients book visits. Doctors manage schedules. Admins are invited by your hospital separately."
+        description="Patients join one hospital. Doctors apply to a hospital and wait for that clinic to approve them."
       />
 
       <section className={loginStyles.authCol} aria-label="Create account">
@@ -68,7 +91,7 @@ export function RegisterPage() {
             <header className={loginStyles.cardHeader}>
               <h2>Create account</h2>
               <p className={loginStyles.subtitle}>
-                Three calm steps — role, profile, then you’re in.
+                Three steps — then doctors send a request to a hospital.
               </p>
             </header>
 
@@ -103,7 +126,7 @@ export function RegisterPage() {
                   >
                     <UserRound size={22} />
                     <strong>Patient</strong>
-                    <span>Book visits and track care</span>
+                    <span>Join a hospital and book its doctors</span>
                   </button>
                   <button
                     type="button"
@@ -114,7 +137,7 @@ export function RegisterPage() {
                   >
                     <Stethoscope size={22} />
                     <strong>Doctor</strong>
-                    <span>Manage schedule and visits</span>
+                    <span>Apply to a hospital for approval</span>
                   </button>
                 </motion.div>
               ) : null}
@@ -163,6 +186,30 @@ export function RegisterPage() {
                       />
                     </div>
                   </div>
+                  {role === 'PATIENT' ? (
+                    <div className={loginStyles.field}>
+                      <label className={loginStyles.label} htmlFor="reg-hospital">
+                        Hospital
+                      </label>
+                      <div className={loginStyles.inputShell}>
+                        <Building2 className={loginStyles.inputIcon} size={18} aria-hidden />
+                        <select
+                          id="reg-hospital"
+                          className={loginStyles.input}
+                          required
+                          value={hospitalId}
+                          onChange={(e) => setHospitalId(e.target.value)}
+                        >
+                          <option value="">Select your hospital</option>
+                          {hospitals.map((h) => (
+                            <option key={h.id} value={h.id}>
+                              {h.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ) : null}
                 </motion.div>
               ) : null}
 
@@ -205,6 +252,9 @@ export function RegisterPage() {
                   <p className={styles.summary}>
                     Creating a <strong>{role.toLowerCase()}</strong> account for{' '}
                     <strong>{fullName || 'you'}</strong>
+                    {role === 'PATIENT' && hospitalId
+                      ? <> at <strong>{hospitals.find((h) => h.id === hospitalId)?.name}</strong></>
+                      : null}
                   </p>
                 </motion.div>
               ) : null}
@@ -234,6 +284,8 @@ export function RegisterPage() {
 
             <p className={loginStyles.create}>
               Already have an account? <Link to="/login">Sign in</Link>
+              <br />
+              Hospital? <Link to="/register/hospital">Apply as a hospital</Link>
             </p>
           </form>
 

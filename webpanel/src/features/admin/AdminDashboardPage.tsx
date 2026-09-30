@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, CalendarDays, ClipboardList, Stethoscope, Sparkles } from 'lucide-react';
+import { Building2, CalendarDays, ClipboardList, Stethoscope, Sparkles, Users } from 'lucide-react';
 import { PageHeader } from '@/shared/components/ui/PageHeader';
 import { StatCard } from '@/shared/components/ui/StatCard';
 import { Card } from '@/shared/components/ui/Card';
@@ -10,17 +10,24 @@ import { PageSkeleton } from '@/shared/components/ui/Shimmer';
 import { EmptyState } from '@/shared/components/ui/EmptyState';
 import { BarChart, DonutChart } from '@/shared/components/ui/MiniChart';
 import { useAuth } from '@/features/auth/AuthContext';
+import { isHospitalAdmin } from '@/features/auth/roleHome';
 import type { Doctor } from '@/types/database';
+import { displayUserName } from '@/shared/userDisplay';
 import styles from '../shared/tables.module.css';
 
 export function AdminDashboardPage() {
   const { user } = useAuth();
+  const clinicAdmin = isHospitalAdmin(user?.role);
+  const hospitalName = user?.hospital?.name?.trim() || null;
+  const firstName = user?.full_name?.split(' ')[0] || 'Admin';
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({
     hospitals: 0,
     departments: 0,
     pendingDoctors: 0,
     appointments: 0,
+    pendingHospitals: 0,
+    patients: 0,
   });
   const [pending, setPending] = useState<Doctor[]>([]);
 
@@ -28,14 +35,17 @@ export function AdminDashboardPage() {
     void (async () => {
       setLoading(true);
       try {
-        const [c, doctors] = await Promise.all([getDashboardCounts(), listDoctors('PENDING')]);
+        const [c, doctors] = await Promise.all([
+          getDashboardCounts(user?.role === 'HOSPITAL_ADMIN' ? user.hospital_id : null),
+          listDoctors('PENDING', user?.role === 'HOSPITAL_ADMIN' ? user.hospital_id : null),
+        ]);
         setCounts(c);
         setPending(doctors.slice(0, 5));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [user?.role, user?.hospital_id]);
 
   if (loading) return <PageSkeleton stats={4} variant="split" />;
 
@@ -46,24 +56,41 @@ export function AdminDashboardPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Operations"
-        title={`Welcome back, ${user?.full_name?.split(' ')[0] || 'Admin'}`}
-        subtitle="Hospitals, approvals, and today’s care pulse — calm and clear."
+        eyebrow={clinicAdmin ? hospitalName ?? 'Hospital dashboard' : 'Operations'}
+        title={
+          clinicAdmin
+            ? `${hospitalName ?? 'Hospital'} dashboard`
+            : `Welcome back, ${firstName}`
+        }
+        subtitle={
+          clinicAdmin
+            ? `Welcome back, ${firstName}. Doctors, departments, and visits for this clinic.`
+            : 'Hospitals, approvals, and today’s care pulse — calm and clear.'
+        }
       />
 
       <div className={styles.hero}>
         <div className={styles.heroCard}>
-          <h2>Mediqo command center</h2>
+          <h2>{clinicAdmin ? hospitalName ?? 'Your hospital' : 'CareHub command center'}</h2>
           <p>
-            Review pending clinicians, keep hospital catalogs current, and watch visit volume with a
-            serene enterprise view.
+            {clinicAdmin
+              ? `This is the ${hospitalName ?? 'hospital'} dashboard. Review pending clinicians, keep departments current, and watch visit volume.`
+              : 'Review pending clinicians, keep hospital catalogs current, and watch visit volume with a serene enterprise view.'}
           </p>
           <div className={styles.heroActions}>
             <Link to="/admin/doctors" className={`${styles.heroBtn} ${styles.heroBtnSolid}`}>
               <Stethoscope size={16} /> Review doctors
             </Link>
+            <Link to="/admin/patients" className={styles.heroBtn}>
+              <Users size={16} /> Patients
+            </Link>
+            {user?.role === 'ADMIN' ? (
+              <Link to="/admin/hospital-requests" className={styles.heroBtn}>
+                <Building2 size={16} /> Hospital requests
+              </Link>
+            ) : null}
             <Link to="/admin/hospitals" className={styles.heroBtn}>
-              <Building2 size={16} /> Manage hospitals
+              <Building2 size={16} /> {user?.role === 'HOSPITAL_ADMIN' ? 'My hospital' : 'Manage hospitals'}
             </Link>
             <Link to="/admin/appointments" className={styles.heroBtn}>
               <CalendarDays size={16} /> View appointments
@@ -96,11 +123,25 @@ export function AdminDashboardPage() {
           delay={0.05}
         />
         <StatCard
+          label="Patients"
+          value={counts.patients ?? 0}
+          icon={<Users size={22} />}
+          delay={0.08}
+          hint={clinicAdmin ? 'Registered here' : 'All hospitals'}
+        />
+        <StatCard
           label="Pending doctors"
           value={counts.pendingDoctors}
           icon={<Stethoscope size={22} />}
           delay={0.1}
           hint="Needs review"
+        />
+        <StatCard
+          label="Pending hospitals"
+          value={counts.pendingHospitals ?? 0}
+          icon={<Building2 size={22} />}
+          delay={0.12}
+          hint="Applications"
         />
         <StatCard
           label="Appointments"
@@ -122,7 +163,7 @@ export function AdminDashboardPage() {
         <Card delay={0.18}>
           <div className={styles.sectionHead}>
             <h3>Awaiting approval</h3>
-            <Link to="/admin/doctors" className={styles.meta}>
+            <Link to={user?.role === 'ADMIN' ? '/admin/hospital-requests' : '/admin/doctors'} className={styles.meta}>
               See all
             </Link>
           </div>
@@ -137,7 +178,7 @@ export function AdminDashboardPage() {
               {pending.map((d) => (
                 <div key={d.id} className={styles.row}>
                   <div>
-                    <strong>{d.users?.full_name ?? 'Doctor'}</strong>
+                    <strong>{displayUserName(d.users)}</strong>
                     <div className={styles.meta}>{d.specialization}</div>
                   </div>
                   <Badge>{d.status}</Badge>

@@ -4,9 +4,12 @@ import { Card } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { Badge } from '@/shared/components/ui/Badge';
 import { Field, Select } from '@/shared/components/ui/Field';
+import { useAuth } from '@/features/auth/AuthContext';
+import { isHospitalAdmin } from '@/features/auth/roleHome';
 import { listDoctors, updateDoctorStatus } from '@/services/dataService';
 import { PageSkeleton, TableSkeleton } from '@/shared/components/ui/Shimmer';
 import type { Doctor, DoctorStatus } from '@/types/database';
+import { displayUserName } from '@/shared/userDisplay';
 import styles from '../shared/tables.module.css';
 
 const filters: Array<DoctorStatus | 'ALL'> = [
@@ -18,6 +21,8 @@ const filters: Array<DoctorStatus | 'ALL'> = [
 ];
 
 export function AdminDoctorsPage() {
+  const { user } = useAuth();
+  const hospitalId = isHospitalAdmin(user?.role) ? user?.hospital_id ?? null : null;
   const [filter, setFilter] = useState<DoctorStatus | 'ALL'>('ALL');
   const [rows, setRows] = useState<Doctor[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -28,7 +33,7 @@ export function AdminDoctorsPage() {
     if (isFilterChange) setFiltering(true);
     else setLoading(true);
     try {
-      setRows(await listDoctors(next === 'ALL' ? undefined : next));
+      setRows(await listDoctors(next === 'ALL' ? undefined : next, hospitalId));
     } finally {
       setLoading(false);
       setFiltering(false);
@@ -37,7 +42,7 @@ export function AdminDoctorsPage() {
 
   useEffect(() => {
     void reload(filter, true);
-  }, [filter]);
+  }, [filter, hospitalId]);
 
   async function setStatus(id: string, status: DoctorStatus) {
     setBusyId(id);
@@ -100,8 +105,8 @@ export function AdminDoctorsPage() {
                   rows.map((d) => (
                     <tr key={d.id}>
                       <td>
-                        <strong>{d.users?.full_name ?? 'Doctor'}</strong>
-                        <div className={styles.meta}>{d.users?.email}</div>
+                        <strong>{displayUserName(d.users)}</strong>
+                        {d.users?.email ? <div className={styles.meta}>{d.users.email}</div> : null}
                       </td>
                       <td>{d.specialization}</td>
                       <td>{d.hospitals?.name ?? '—'}</td>

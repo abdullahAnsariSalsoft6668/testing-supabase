@@ -13,7 +13,7 @@ import type { AuthUserProfile } from '@/models/auth.types';
 import { AdminStackParamList } from '@/navigation/types';
 import { useSelector } from '@/redux/hooks';
 import { listDoctorsByStatus } from '@/services/doctorService';
-import { listDepartments, listHospitals } from '@/services/hospitalService';
+import { listDepartments, listHospitals, listHospitalsByStatus } from '@/services/hospitalService';
 import { adminScreenStyles as s } from '@/styles/adminScreenStyles';
 import { moderateScale } from '@/styles/scaling';
 import { theme } from '@/styles/theme';
@@ -61,7 +61,7 @@ const AdminDashboard = () => {
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
     const user = useSelector((st) => st.auth.userData) as AuthUserProfile;
     const insets = useSafeAreaInsets();
-    const [stats, setStats] = useState({ hospitals: 0, departments: 0, pendingDoctors: 0, todayAppts: 0 });
+    const [stats, setStats] = useState({ hospitals: 0, departments: 0, pendingDoctors: 0, todayAppts: 0, pendingHospitals: 0 });
     const [loading, setLoading] = useState(true);
     const hasFetchedRef = useRef(false);
 
@@ -69,28 +69,35 @@ const AdminDashboard = () => {
         useCallback(() => {
             if (!hasFetchedRef.current) setLoading(true);
             const today = getLocalDateIso();
+            const clinicId = user?.role === 'HOSPITAL_ADMIN' ? user.hospital_id ?? null : null;
             Promise.all([
-                listHospitals(),
-                listDepartments(),
-                listDoctorsByStatus('PENDING'),
+                listHospitals(clinicId || undefined),
+                listDepartments(clinicId || undefined),
+                listDoctorsByStatus('PENDING', clinicId),
                 getSupabase()
                     .from('appointments')
                     .select('*', { count: 'exact', head: true })
                     .eq('appointment_date', today),
+                user?.role === 'ADMIN' ? listHospitalsByStatus('PENDING') : Promise.resolve([]),
             ])
-                .then(([hospitals, departments, pending, appts]) => {
+                .then(([hospitals, departments, pending, appts, pendingHospitals]) => {
                     setStats({
-                        hospitals: hospitals.length,
-                        departments: departments.length,
-                        pendingDoctors: pending.length,
+                        hospitals: clinicId ? hospitals.filter((h) => h.id === clinicId).length : hospitals.length,
+                        departments: clinicId
+                            ? departments.filter((d) => d.hospital_id === clinicId).length
+                            : departments.length,
+                        pendingDoctors: clinicId
+                            ? pending.filter((d) => d.hospital_id === clinicId).length
+                            : pending.length,
                         todayAppts: appts.count ?? 0,
+                        pendingHospitals: pendingHospitals.length,
                     });
                 })
                 .finally(() => {
                     setLoading(false);
                     hasFetchedRef.current = true;
                 });
-        }, []),
+        }, [user?.role, user?.hospital_id]),
     );
 
     const firstName = user.full_name?.split(' ')[0] ?? 'Admin';
@@ -119,7 +126,7 @@ const AdminDashboard = () => {
                         <TextComp text={firstName} style={styles.greetName} />
                         <View style={styles.heroBadge}>
                             <MyIcons name="greenCircleCheck" size={12} stroke={theme.colors.text.inverse} />
-                            <TextComp text="Administrator" style={styles.heroBadgeText} />
+                            <TextComp text={user?.role === 'HOSPITAL_ADMIN' ? (user.hospital?.name ?? 'Hospital admin') : 'Administrator'} style={styles.heroBadgeText} />
                         </View>
                     </View>
                     <View style={styles.avatar}>
@@ -147,6 +154,25 @@ const AdminDashboard = () => {
                 contentContainerStyle={styles.body}
                 showsVerticalScrollIndicator={false}
             >
+                {stats.pendingHospitals > 0 && user?.role === 'ADMIN' ? (
+                    <Pressable
+                        style={styles.alertCard}
+                        onPress={() => navigation.navigate(routes.admin.hospitalRequests)}
+                    >
+                        <View style={styles.alertIcon}>
+                            <MyIcons name="healthTabHospital" size={20} stroke={theme.palette.status.warning} />
+                        </View>
+                        <View style={styles.alertText}>
+                            <TextComp text="Hospital applications" style={styles.alertTitle} />
+                            <TextComp
+                                text={`${stats.pendingHospitals} hospital${stats.pendingHospitals > 1 ? 's' : ''} waiting for approval`}
+                                style={styles.alertBody}
+                            />
+                        </View>
+                        <MyIcons name="rightChevron" size={14} stroke={theme.palette.status.warning} />
+                    </Pressable>
+                ) : null}
+
                 {stats.pendingDoctors > 0 ? (
                     <Pressable
                         style={styles.alertCard}
@@ -195,6 +221,29 @@ const AdminDashboard = () => {
                         onPress={() => navigation.navigate(routes.admin.tab.doctors as never)}
                         badge={stats.pendingDoctors || undefined}
                     />
+                    <View style={styles.quickLinkDivider} />
+                    <QuickLink
+                        icon="healthTabUser"
+                        title="Patients"
+                        subtitle="People registered at this hospital"
+                        accent={theme.palette.teal.main}
+                        surface={theme.palette.teal.surface}
+                        onPress={() => navigation.navigate(routes.admin.patients)}
+                    />
+                    {user?.role === 'ADMIN' ? (
+                        <>
+                            <View style={styles.quickLinkDivider} />
+                            <QuickLink
+                                icon="healthTabHospital"
+                                title="Hospital requests"
+                                subtitle="Approve new clinics"
+                                accent={theme.palette.status.warning}
+                                surface={theme.palette.status.warning + '18'}
+                                onPress={() => navigation.navigate(routes.admin.hospitalRequests)}
+                                badge={stats.pendingHospitals || undefined}
+                            />
+                        </>
+                    ) : null}
                 </View>
 
                 <TextComp text="Account" style={styles.sectionTitle} />
@@ -210,7 +259,7 @@ const AdminDashboard = () => {
                         <View style={s.infoContent}>
                             <TextComp text="Role" style={s.infoLabel} />
                             <View style={s.roleBadge}>
-                                <TextComp text="ADMIN" style={s.roleText} />
+                                <TextComp text={user.role ?? 'ADMIN'} style={s.roleText} />
                             </View>
                         </View>
                     </View>

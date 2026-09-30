@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Bell,
   Building2,
   CalendarDays,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -12,6 +13,7 @@ import {
   LogOut,
   Menu,
   Moon,
+  Pencil,
   Search,
   Stethoscope,
   Sun,
@@ -30,9 +32,19 @@ type NavItem = { to: string; label: string; icon: typeof LayoutDashboard };
 const navByRole: Record<UserRole, NavItem[]> = {
   ADMIN: [
     { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/admin/hospital-requests', label: 'Hospital requests', icon: Building2 },
     { to: '/admin/hospitals', label: 'Hospitals', icon: Building2 },
     { to: '/admin/departments', label: 'Departments', icon: ClipboardList },
     { to: '/admin/doctors', label: 'Doctors', icon: Stethoscope },
+    { to: '/admin/patients', label: 'Patients', icon: Users },
+    { to: '/admin/appointments', label: 'Appointments', icon: CalendarDays },
+  ],
+  HOSPITAL_ADMIN: [
+    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/admin/hospitals', label: 'My hospital', icon: Building2 },
+    { to: '/admin/departments', label: 'Departments', icon: ClipboardList },
+    { to: '/admin/doctors', label: 'Doctors', icon: Stethoscope },
+    { to: '/admin/patients', label: 'Patients', icon: Users },
     { to: '/admin/appointments', label: 'Appointments', icon: CalendarDays },
   ],
   DOCTOR: [
@@ -44,6 +56,7 @@ const navByRole: Record<UserRole, NavItem[]> = {
     { to: '/patient', label: 'Home', icon: LayoutDashboard },
     { to: '/patient/doctors', label: 'Find care', icon: Stethoscope },
     { to: '/patient/visits', label: 'My visits', icon: CalendarDays },
+    { to: '/patient/profile', label: 'Profile', icon: UserRound },
   ],
 };
 
@@ -67,13 +80,43 @@ export function AppShell() {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === '1');
   const [scrolled, setScrolled] = useState(false);
   const [query, setQuery] = useState('');
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
   const role = user?.role ?? 'PATIENT';
+  const hospitalName = user?.hospital?.name?.trim() || null;
+  const brandSub =
+    role === 'HOSPITAL_ADMIN'
+      ? hospitalName ?? 'Hospital console'
+      : role === 'ADMIN'
+        ? 'Platform console'
+        : `${role.toLowerCase()} console`;
+  const profileRole =
+    role === 'HOSPITAL_ADMIN' ? hospitalName ?? 'Hospital admin' : role.toLowerCase();
   const items = navByRole[role];
   const crumbs = useMemo(() => crumbsFromPath(location.pathname), [location.pathname]);
 
   useEffect(() => {
     setMenuOpen(false);
+    setAccountOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+    const onPointer = (event: MouseEvent) => {
+      if (!accountRef.current?.contains(event.target as Node)) {
+        setAccountOpen(false);
+      }
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAccountOpen(false);
+    };
+    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [accountOpen]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
@@ -132,8 +175,8 @@ export function AppShell() {
         <div className={styles.logo}>+</div>
         {!collapsed ? (
           <div className={styles.brandText}>
-            <div className={styles.brandName}>Mediqo</div>
-            <div className={styles.brandSub}>{role.toLowerCase()} console</div>
+            <div className={styles.brandName}>CareHub</div>
+            <div className={styles.brandSub}>{brandSub}</div>
           </div>
         ) : null}
         <button
@@ -190,7 +233,7 @@ export function AppShell() {
         </button>
         <div className={styles.mobileBrand}>
           <span className={styles.mobileLogo}>+</span>
-          <span>Mediqo</span>
+          <span>CareHub</span>
         </div>
         <button
           type="button"
@@ -260,7 +303,7 @@ export function AppShell() {
             <Search size={16} aria-hidden />
             <input
               type="search"
-              placeholder="Search Mediqo…"
+              placeholder="Search CareHub…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search"
@@ -280,13 +323,57 @@ export function AppShell() {
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <div className={styles.profileChip} title={user?.email ?? ''}>
-              <div className={styles.avatar}>{initials}</div>
-              <div className={styles.profileMeta}>
-                <strong>{user?.full_name || 'User'}</strong>
-                <span>{role.toLowerCase()}</span>
-              </div>
-              <UserRound size={14} className={styles.profileIcon} />
+            <div className={styles.accountWrap} ref={accountRef}>
+              <button
+                type="button"
+                className={[styles.profileChip, accountOpen ? styles.profileChipOpen : ''].join(' ')}
+                title={user?.email ?? 'Account'}
+                aria-label="Open account menu"
+                aria-haspopup="menu"
+                aria-expanded={accountOpen}
+                onClick={() => setAccountOpen((open) => !open)}
+              >
+                <div className={styles.avatar}>{initials}</div>
+                <div className={styles.profileMeta}>
+                  <strong>{user?.full_name || 'User'}</strong>
+                  <span>{profileRole}</span>
+                </div>
+                <ChevronDown size={14} className={styles.profileIcon} />
+              </button>
+              {accountOpen ? (
+                <div className={styles.accountMenu} role="menu">
+                  <div className={styles.accountMenuHead}>
+                    <div className={styles.avatar}>{initials}</div>
+                    <div>
+                      <strong>{user?.full_name || 'User'}</strong>
+                      <span>{user?.email}</span>
+                    </div>
+                  </div>
+                  {role === 'PATIENT' ? (
+                    <Link
+                      to="/patient/profile"
+                      className={styles.accountMenuItem}
+                      role="menuitem"
+                      onClick={() => setAccountOpen(false)}
+                    >
+                      <Pencil size={16} />
+                      Edit profile
+                    </Link>
+                  ) : null}
+                  <button
+                    type="button"
+                    className={styles.accountMenuItem}
+                    role="menuitem"
+                    onClick={() => {
+                      setAccountOpen(false);
+                      void handleSignOut();
+                    }}
+                  >
+                    <LogOut size={16} />
+                    Sign out
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         </header>

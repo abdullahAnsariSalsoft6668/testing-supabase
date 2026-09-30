@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
+import { homePath } from '@/features/auth/roleHome';
 import { AuthBrandPanel } from '@/features/auth/AuthBrandPanel';
 import { FullPageLoader } from '@/shared/components/ui/Shimmer';
 import { supabase } from '@/lib/supabase';
@@ -63,12 +64,10 @@ export function LoginPage() {
     }
   }, []);
 
-  if (loading) return <FullPageLoader label="Preparing Mediqo…" />;
+  if (loading) return <FullPageLoader label="Preparing CareHub…" />;
 
   if (user) {
-    const home =
-      user.role === 'ADMIN' ? '/admin' : user.role === 'DOCTOR' ? '/doctor' : '/patient';
-    return <Navigate to={home} replace />;
+    return <Navigate to={homePath(user)} replace />;
   }
 
   async function onSubmit(e: FormEvent) {
@@ -128,7 +127,7 @@ export function LoginPage() {
             <header className={styles.cardHeader}>
               <h2>Welcome back</h2>
               <p className={styles.subtitle}>
-                Sign in to your Mediqo hospital console — calm, clear, and secure.
+                Sign in to your CareHub hospital console — calm, clear, and secure.
               </p>
             </header>
 
@@ -228,7 +227,9 @@ export function LoginPage() {
             </div>
 
             <p className={styles.create}>
-              New to Mediqo? <Link to="/register">Create account</Link>
+              New to CareHub? <Link to="/register">Create account</Link>
+              <br />
+              Hospital? <Link to="/register/hospital">Apply as a hospital</Link>
             </p>
           </form>
 

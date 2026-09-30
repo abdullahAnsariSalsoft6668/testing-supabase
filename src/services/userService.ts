@@ -1,11 +1,14 @@
 import { getSupabase } from '@/utils/supabase';
-import type { Doctor, Patient, User, UserRole } from '@/types/database';
+import type { Doctor, Hospital, HospitalStatus, Patient, User, UserRole } from '@/types/database';
 
 export interface FullUserProfile extends User {
     patient_id?: string;
     patient?: Patient | null;
     doctor_id?: string;
     doctor?: Doctor | null;
+    hospital_id?: string | null;
+    hospital_status?: HospitalStatus | null;
+    hospital?: Hospital | null;
     profileComplete: boolean;
 }
 
@@ -29,17 +32,43 @@ export async function fetchFullProfile(userId: string): Promise<FullUserProfile 
     const user = await fetchUserById(userId);
     if (!user) return null;
 
-    const [{ data: patient }, { data: doctor }] = await Promise.all([
-        getSupabase().from('patients').select('*').eq('user_id', userId).maybeSingle(),
-        getSupabase().from('doctors').select('*').eq('user_id', userId).maybeSingle(),
+    const [{ data: patient }, { data: doctor }, { data: membership }] = await Promise.all([
+        getSupabase().from('patients').select('*, hospitals(*)').eq('user_id', userId).maybeSingle(),
+        getSupabase().from('doctors').select('*, hospitals(*)').eq('user_id', userId).maybeSingle(),
+        getSupabase().from('hospital_members').select('hospital_id').eq('user_id', userId).maybeSingle(),
     ]);
 
+    const patientHospitalId = (patient as Patient | null)?.hospital_id ?? null;
+    const resolvedHospitalId =
+        membership?.hospital_id ?? patientHospitalId ?? doctor?.hospital_id ?? null;
+
+    let hospital: Hospital | null = (patient as Patient | null)?.hospitals ?? doctor?.hospitals ?? null;
+    if (resolvedHospitalId && hospital?.id !== resolvedHospitalId) {
+        const { data: hospitalRow } = await getSupabase()
+            .from('hospitals')
+            .select('*')
+            .eq('id', resolvedHospitalId)
+            .maybeSingle();
+        hospital = (hospitalRow as Hospital | null) ?? hospital;
+    }
+
     const effectiveRole: UserRole =
-        user.role === 'ADMIN' ? 'ADMIN' : doctor ? 'DOCTOR' : patient ? 'PATIENT' : user.role;
+        user.role === 'ADMIN'
+            ? 'ADMIN'
+            : membership?.hospital_id
+              ? 'HOSPITAL_ADMIN'
+              : doctor
+                ? 'DOCTOR'
+                : patient
+                  ? 'PATIENT'
+                  : user.role === 'HOSPITAL_ADMIN'
+                    ? 'HOSPITAL_ADMIN'
+                    : user.role;
 
     const profileComplete =
         effectiveRole === 'ADMIN' ||
-        (effectiveRole === 'PATIENT' && !!patient) ||
+        effectiveRole === 'HOSPITAL_ADMIN' ||
+        (effectiveRole === 'PATIENT' && !!patientHospitalId) ||
         (effectiveRole === 'DOCTOR' && !!doctor);
 
     return {
@@ -49,6 +78,9 @@ export async function fetchFullProfile(userId: string): Promise<FullUserProfile 
         patient,
         doctor_id: doctor?.id,
         doctor,
+        hospital_id: resolvedHospitalId,
+        hospital_status: hospital?.status ?? null,
+        hospital,
         profileComplete,
     };
 }

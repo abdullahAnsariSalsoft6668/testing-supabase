@@ -75,7 +75,7 @@
 
   /* Gradients */
   --gradient-screen: linear-gradient(180deg, #f4f7fb 0%, #ffffff 100%);
-  --gradient-primary: linear-gradient(135deg, #e8f1fc 0%, #1e75e5 50%, #155cb8 100%);
+  --gradient-primary: #1e75e5;
 
   /* Spacing */
   --space-1: 4px;

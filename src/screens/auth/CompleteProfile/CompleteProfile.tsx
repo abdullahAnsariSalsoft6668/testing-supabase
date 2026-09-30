@@ -6,9 +6,9 @@ import TextComp from '@/components/TextComp';
 import type { AuthUserProfile } from '@/models/auth.types';
 import { useSelector } from '@/redux/hooks';
 import { syncAuthFromSupabase } from '@/redux/actions/auth';
-import { listDepartments, listHospitals } from '@/services/hospitalService';
+import { listClinicOptions, listDepartments, listHospitals } from '@/services/hospitalService';
 import { createDoctor, getDoctorByUserId } from '@/services/doctorService';
-import { BLOOD_GROUPS, createPatient, getPatientByUserId, GENDERS } from '@/services/patientService';
+import { BLOOD_GROUPS, createPatient, getPatientByUserId, GENDERS, updatePatient } from '@/services/patientService';
 import type { BloodGroup, Department, Gender, Hospital } from '@/types/database';
 import { getUserDisplayName } from '@/utils/userDisplay';
 import { formatErrorMessage } from '@/utils/formatError';
@@ -48,6 +48,8 @@ const CompleteProfile: React.FC = () => {
     const [departmentId, setDepartmentId] = useState('');
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
+    const [specializations, setSpecializations] = useState<string[]>([]);
+    const [qualifications, setQualifications] = useState<string[]>([]);
 
     const displayName = useMemo(() => getUserDisplayName(user, 'there'), [user]);
 
@@ -56,9 +58,9 @@ const CompleteProfile: React.FC = () => {
     }, []);
 
     React.useEffect(() => {
-        listHospitals().then((h) => {
-            setHospitals(h);
-            if (h[0]) setHospitalId(h[0].id);
+                listHospitals().then((h) => {
+            const approved = h.filter((x) => !x.status || x.status === 'APPROVED');
+            setHospitals(approved);
         });
     }, []);
 
@@ -66,12 +68,30 @@ const CompleteProfile: React.FC = () => {
         if (!hospitalId) {
             setDepartments([]);
             setDepartmentId('');
+            setSpecializations([]);
+            setQualifications([]);
             return;
         }
-        listDepartments(hospitalId).then((d) => {
-            setDepartments(d);
-            setDepartmentId(d[0]?.id ?? '');
-        });
+        Promise.all([
+            listDepartments(hospitalId),
+            listClinicOptions('specialization', hospitalId),
+            listClinicOptions('qualification', hospitalId),
+        ])
+            .then(([d, specs, quals]) => {
+                setDepartments(d);
+                setDepartmentId('');
+                const fromDepts = d.map((row) => row.name);
+                const fromCatalog = specs.map((row) => row.name);
+                setSpecializations([...new Set([...fromDepts, ...fromCatalog])].sort((a, b) => a.localeCompare(b)));
+                setQualifications([...new Set(quals.map((row) => row.name))].sort((a, b) => a.localeCompare(b)));
+                setSpecialization('');
+                setQualification('');
+            })
+            .catch(() => {
+                setDepartments([]);
+                setSpecializations([]);
+                setQualifications([]);
+            });
     }, [hospitalId]);
 
     const handleFinishSetup = async () => {
@@ -85,6 +105,10 @@ const CompleteProfile: React.FC = () => {
                     Toast.show({ type: 'success', text1: 'Doctor profile already submitted' });
                     return;
                 }
+                if (!hospitalId) {
+                    Toast.show({ type: 'error', text1: 'Choose a hospital to apply to' });
+                    return;
+                }
                 if (!specialization.trim()) {
                     Toast.show({ type: 'error', text1: 'Specialization is required' });
                     return;
@@ -96,28 +120,41 @@ const CompleteProfile: React.FC = () => {
                     consultation_fee: fee ? Number(fee) : undefined,
                     bio: bio.trim() || undefined,
                     license_number: license.trim() || undefined,
-                    hospital_id: hospitalId || undefined,
+                    hospital_id: hospitalId,
                     department_id: departmentId || undefined,
                 });
             } else {
+                if (!hospitalId) {
+                    Toast.show({ type: 'error', text1: 'Choose your hospital' });
+                    return;
+                }
                 const existing = await getPatientByUserId(user.id);
-                if (existing) {
+                if (existing?.hospital_id) {
                     await syncAuthFromSupabase();
                     Toast.show({ type: 'success', text1: 'Patient profile already completed' });
                     return;
                 }
-                await createPatient(user.id, {
-                    gender,
-                    blood_group: bloodGroup,
-                    dob: dob || null,
-                    address: address.trim() || null,
-                    emergency_contact_name: emergencyName.trim() || null,
-                    emergency_contact_phone: emergencyPhone.trim() || null,
-                    allergies: allergies.trim() || null,
-                });
+                if (existing) {
+                    await updatePatient(existing.id, { hospital_id: hospitalId });
+                } else {
+                    await createPatient(user.id, {
+                        gender,
+                        blood_group: bloodGroup,
+                        dob: dob || null,
+                        address: address.trim() || null,
+                        emergency_contact_name: emergencyName.trim() || null,
+                        emergency_contact_phone: emergencyPhone.trim() || null,
+                        allergies: allergies.trim() || null,
+                        hospital_id: hospitalId,
+                    });
+                }
             }
             await syncAuthFromSupabase();
-            Toast.show({ type: 'success', text1: 'Profile completed' });
+            Toast.show({
+                type: 'success',
+                text1: isDoctor ? 'Request sent' : 'Profile completed',
+                text2: isDoctor ? 'That hospital will review your application.' : undefined,
+            });
         } catch (e: unknown) {
             Toast.show({ type: 'error', text1: 'Setup failed', text2: formatErrorMessage(e) });
         } finally {
@@ -135,8 +172,8 @@ const CompleteProfile: React.FC = () => {
                 <TextComp
                     text={
                         isDoctor
-                            ? 'Add your credentials so our team can verify and approve your account.'
-                            : 'A few details help us personalize appointments, records, and emergency contact info.'
+                            ? 'Pick a hospital, then choose specialization and qualification from the lists that clinic maintains.'
+                            : 'Pick your hospital first. Then a few details help us personalize appointments and records.'
                     }
                     style={styles.introMeta}
                 />
@@ -144,10 +181,42 @@ const CompleteProfile: React.FC = () => {
         </AuthStaggerItem>
     );
 
+    const renderHospitalPicker = (requiredHint: string) => (
+        <AuthStaggerItem index={1}>
+            <TextComp text="Hospital" style={styles.sectionLabel} />
+            <TextComp text={requiredHint} style={styles.sectionHint} />
+            {hospitals.length === 0 ? (
+                <TextComp
+                    text="No approved hospitals yet. Check back after a clinic is approved."
+                    style={styles.sectionHint}
+                />
+            ) : (
+                <View style={styles.chipRow}>
+                    {hospitals.map((h) => {
+                        const selected = hospitalId === h.id;
+                        return (
+                            <Pressable
+                                key={h.id}
+                                style={[styles.listChip, selected && styles.listChipSelected]}
+                                onPress={() => setHospitalId(h.id)}
+                            >
+                                <TextComp
+                                    text={h.name}
+                                    style={[styles.listChipText, selected && styles.listChipTextSelected]}
+                                />
+                            </Pressable>
+                        );
+                    })}
+                </View>
+            )}
+        </AuthStaggerItem>
+    );
+
     const renderPatientForm = () => (
         <>
             {renderIntro()}
-            <AuthStaggerItem index={1}>
+            {renderHospitalPicker('Required. You will only see doctors who work at this hospital.')}
+            <AuthStaggerItem index={2}>
                 <TextComp text="Personal details" style={styles.sectionLabel} />
                 <TextComp text="Used for your medical records and visit history." style={styles.sectionHint} />
             </AuthStaggerItem>
@@ -237,32 +306,89 @@ const CompleteProfile: React.FC = () => {
         <>
             {renderIntro()}
             <AuthStaggerItem index={1}>
-                <TextComp text="Professional details" style={styles.sectionLabel} />
-                <TextComp text="Required for admin review before you can manage your schedule." style={styles.sectionHint} />
+                <TextComp text="Hospital affiliation" style={styles.sectionLabel} />
+                <TextComp
+                    text="Required. That hospital reviews your credentials before you can see patients."
+                    style={styles.sectionHint}
+                />
+                {hospitals.length === 0 ? (
+                    <TextComp
+                        text="No approved hospitals yet. Check back after a clinic is approved."
+                        style={styles.sectionHint}
+                    />
+                ) : (
+                    <View style={styles.chipRow}>
+                        {hospitals.map((h) => {
+                            const selected = hospitalId === h.id;
+                            return (
+                                <Pressable
+                                    key={h.id}
+                                    style={[styles.listChip, selected && styles.listChipSelected]}
+                                    onPress={() => setHospitalId(h.id)}
+                                >
+                                    <TextComp
+                                        text={h.name}
+                                        style={[styles.listChipText, selected && styles.listChipTextSelected]}
+                                    />
+                                </Pressable>
+                            );
+                        })}
+                    </View>
+                )}
             </AuthStaggerItem>
+            {departments.length > 0 ? (
+                <AuthStaggerItem index={2}>
+                    <TextComp text="Department" style={styles.sectionLabel} />
+                    <View style={styles.chipRow}>
+                        {departments.map((d) => {
+                            const selected = departmentId === d.id;
+                            return (
+                                <Pressable
+                                    key={d.id}
+                                    style={[styles.listChip, selected && styles.listChipSelected]}
+                                    onPress={() => {
+                                        setDepartmentId(d.id);
+                                        setSpecialization(d.name);
+                                    }}
+                                >
+                                    <TextComp
+                                        text={d.name}
+                                        style={[styles.listChipText, selected && styles.listChipTextSelected]}
+                                    />
+                                </Pressable>
+                            );
+                        })}
+                    </View>
+                </AuthStaggerItem>
+            ) : null}
+            {specializations.length > 0 ? (
+                <ProfileOptionPicker
+                    index={3}
+                    label="Specialization"
+                    options={specializations}
+                    value={specialization}
+                    onChange={setSpecialization}
+                />
+            ) : hospitalId ? (
+                <AuthStaggerItem index={3}>
+                    <TextComp text="Specialization" style={styles.sectionLabel} />
+                    <TextComp
+                        text="No specializations yet. Ask the hospital or platform admin to add them under Departments."
+                        style={styles.sectionHint}
+                    />
+                </AuthStaggerItem>
+            ) : null}
+            {qualifications.length > 0 ? (
+                <ProfileOptionPicker
+                    index={4}
+                    label="Qualification"
+                    options={qualifications}
+                    value={qualification}
+                    onChange={setQualification}
+                />
+            ) : null}
             <AuthTextInput
-                index={2}
-                label="Specialization"
-                required
-                placeholder="e.g. Cardiology, Pediatrics"
-                value={specialization}
-                onChangeText={setSpecialization}
-                containerStyle={authStyles.inputContainer}
-                labelStyle={authStyles.inputLabel}
-                inputContainerStyle={authStyles.inputField}
-            />
-            <AuthTextInput
-                index={3}
-                label="Qualification"
-                placeholder="e.g. MBBS, MD"
-                value={qualification}
-                onChangeText={setQualification}
-                containerStyle={authStyles.inputContainer}
-                labelStyle={authStyles.inputLabel}
-                inputContainerStyle={authStyles.inputField}
-            />
-            <AuthTextInput
-                index={4}
+                index={5}
                 label="License Number"
                 placeholder="Medical license ID"
                 value={license}
@@ -272,7 +398,7 @@ const CompleteProfile: React.FC = () => {
                 inputContainerStyle={authStyles.inputField}
             />
             <AuthTextInput
-                index={5}
+                index={6}
                 label="Experience (years)"
                 placeholder="0"
                 value={experience}
@@ -283,7 +409,7 @@ const CompleteProfile: React.FC = () => {
                 inputContainerStyle={authStyles.inputField}
             />
             <AuthTextInput
-                index={6}
+                index={7}
                 label="Consultation Fee"
                 placeholder="Optional"
                 value={fee}
@@ -294,7 +420,7 @@ const CompleteProfile: React.FC = () => {
                 inputContainerStyle={authStyles.inputField}
             />
             <AuthTextInput
-                index={7}
+                index={8}
                 label="Bio"
                 placeholder="Short introduction for patients"
                 value={bio}
@@ -304,55 +430,7 @@ const CompleteProfile: React.FC = () => {
                 labelStyle={authStyles.inputLabel}
                 inputContainerStyle={{ ...authStyles.inputField, height: undefined, minHeight: 96, paddingVertical: 12 }}
             />
-            {hospitals.length > 0 ? (
-                <>
-                    <View style={styles.sectionDivider} />
-                    <AuthStaggerItem index={8}>
-                        <TextComp text="Hospital affiliation" style={styles.sectionLabel} />
-                        <TextComp text="Where do you primarily practice?" style={styles.sectionHint} />
-                        <View style={styles.chipRow}>
-                            {hospitals.map((h) => {
-                                const selected = hospitalId === h.id;
-                                return (
-                                    <Pressable
-                                        key={h.id}
-                                        style={[styles.listChip, selected && styles.listChipSelected]}
-                                        onPress={() => setHospitalId(h.id)}
-                                    >
-                                        <TextComp
-                                            text={h.name}
-                                            style={[styles.listChipText, selected && styles.listChipTextSelected]}
-                                        />
-                                    </Pressable>
-                                );
-                            })}
-                        </View>
-                    </AuthStaggerItem>
-                    {departments.length > 0 ? (
-                        <AuthStaggerItem index={9}>
-                            <TextComp text="Department" style={styles.sectionLabel} />
-                            <View style={styles.chipRow}>
-                                {departments.map((d) => {
-                                    const selected = departmentId === d.id;
-                                    return (
-                                        <Pressable
-                                            key={d.id}
-                                            style={[styles.listChip, selected && styles.listChipSelected]}
-                                            onPress={() => setDepartmentId(d.id)}
-                                        >
-                                            <TextComp
-                                                text={d.name}
-                                                style={[styles.listChipText, selected && styles.listChipTextSelected]}
-                                            />
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
-                        </AuthStaggerItem>
-                    ) : null}
-                </>
-            ) : null}
-            <AuthStaggerItem index={hospitals.length > 0 ? 10 : 8}>
+            <AuthStaggerItem index={9}>
                 <AuthYellowButton
                     title="Submit for Approval"
                     onPress={handleFinishSetup}

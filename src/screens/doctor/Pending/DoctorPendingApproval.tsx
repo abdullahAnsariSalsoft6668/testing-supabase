@@ -96,7 +96,7 @@ const DoctorPendingApproval = () => {
                         </View>
                         <View style={healthScreenStyles.card}>
                             <TextComp
-                                text="An administrator will review your credentials shortly. You'll gain access once approved."
+                                text="The hospital you applied to will review your credentials. You'll get doctor access once they approve you."
                                 style={healthScreenStyles.cardMeta}
                             />
                         </View>

@@ -1,5 +1,6 @@
 import { bookAppointment, listPatientAppointments } from '@/services/appointmentService';
 import { listApprovedDoctors } from '@/services/doctorService';
+import { getSupabase } from '@/utils/supabase';
 import { listAvailableSlots } from '@/services/slotService';
 import type { AiChatResponse, AiSessionState } from '@/types/aiAssistant';
 import { getUserDisplayName } from '@/utils/userDisplay';
@@ -119,10 +120,20 @@ async function runLocalAlphaAssistant(
         normalize(text).includes('doctor') ||
         normalize(text).includes('find')
     ) {
-        const doctors = await listApprovedDoctors();
+        const { data: patientRow } = await getSupabase()
+            .from('patients')
+            .select('hospital_id')
+            .eq('id', patientId)
+            .maybeSingle();
+        if (!patientRow?.hospital_id) {
+            state.step = 'IDLE';
+            replyText = 'Choose your hospital in your profile first, then I can find doctors for you.';
+            suggestions = ['Help'];
+        } else {
+        const doctors = await listApprovedDoctors({ hospitalId: patientRow.hospital_id });
         if (doctors.length === 0) {
             state.step = 'IDLE';
-            replyText = 'No approved doctors are available right now. Please try again later.';
+            replyText = 'No approved doctors are available at your hospital right now. Please try again later.';
         } else {
             const query = normalize(text);
             const isGenericBook =
@@ -159,6 +170,7 @@ async function runLocalAlphaAssistant(
                 replyText = `I can help you book a visit. Which doctor would you like?\n\n${list}\n\nReply with a number or doctor name.`;
                 suggestions = state.doctorOptions.slice(0, 3).map((d) => d.label.split(' — ')[0]);
             }
+        }
         }
     } else if (state.step === 'PICK_DOCTOR' && state.doctorOptions?.length) {
         const picked = pickByIndexOrLabel(text, state.doctorOptions);

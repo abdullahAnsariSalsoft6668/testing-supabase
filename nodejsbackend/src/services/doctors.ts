@@ -12,6 +12,9 @@ export async function listApprovedDoctors(specialization?: string) {
   if (error) throw error;
 
   let rows = data ?? [];
+  rows = rows.filter(
+    (d) => !d.hospitals?.status || d.hospitals.status === 'APPROVED',
+  );
   if (specialization?.trim()) {
     const q = specialization.trim().toLowerCase();
     rows = rows.filter(

@@ -19,6 +19,8 @@ import MyIcons from '@/components/MyIcons';
 import TextComp from '@/components/TextComp';
 import routes from '@/constants/routes';
 import { PatientStackParamList } from '@/navigation/types';
+import type { AuthUserProfile } from '@/models/auth.types';
+import { useSelector } from '@/redux/hooks';
 import { listApprovedDoctors } from '@/services/doctorService';
 import { listHospitals } from '@/services/hospitalService';
 import { moderateScale } from '@/styles/scaling';
@@ -41,16 +43,25 @@ const matchesQuery = (query: string, ...values: (string | null | undefined)[]) =
 
 const PatientExplore = () => {
     const navigation = useNavigation<NativeStackNavigationProp<PatientStackParamList>>();
+    const user = useSelector((s) => s.auth.userData) as AuthUserProfile;
+    const hospitalId = user?.patient?.hospital_id ?? user?.hospital_id ?? null;
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [tab, setTab] = useState<ExploreTab>('hospitals');
+    const [tab, setTab] = useState<ExploreTab>('doctors');
     const hasFetchedRef = useRef(false);
 
     const load = useCallback(() => {
         if (!hasFetchedRef.current) setLoading(true);
-        Promise.all([listHospitals(), listApprovedDoctors()])
+        if (!hospitalId) {
+            setHospitals([]);
+            setDoctors([]);
+            setLoading(false);
+            hasFetchedRef.current = true;
+            return;
+        }
+        Promise.all([listHospitals(hospitalId), listApprovedDoctors({ hospitalId })])
             .then(([hospitalRows, doctorRows]) => {
                 setHospitals(hospitalRows);
                 setDoctors(doctorRows);
@@ -59,7 +70,7 @@ const PatientExplore = () => {
                 setLoading(false);
                 hasFetchedRef.current = true;
             });
-    }, []);
+    }, [hospitalId]);
 
     useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -140,7 +151,7 @@ const PatientExplore = () => {
         <View style={styles.screen}>
             <HealthScreenHeader
                 title="Explore"
-                subtitle="Find hospitals and specialists near you"
+                subtitle={user?.hospital?.name ? `Care at ${user.hospital.name}` : 'Find specialists at your hospital'}
             >
                 {headerContent}
             </HealthScreenHeader>
@@ -171,11 +182,13 @@ const PatientExplore = () => {
                     <CardListSkeleton count={4} />
                 ) : totalCount === 0 ? (
                     <EmptyState
-                        title={tab === 'hospitals' ? 'No hospitals yet' : 'No doctors yet'}
+                        title={!hospitalId ? 'Choose your hospital' : tab === 'hospitals' ? 'No hospitals yet' : 'No doctors yet'}
                         message={
-                            tab === 'hospitals'
-                                ? 'Healthcare facilities will appear here once registered.'
-                                : 'Approved specialists will appear here once available.'
+                            !hospitalId
+                                ? 'Complete your profile and pick a hospital to see its doctors.'
+                                : tab === 'hospitals'
+                                ? 'Your hospital will appear here once registered.'
+                                : 'Approved specialists at your hospital will appear here once available.'
                         }
                     />
                 ) : activeList.length === 0 ? (

@@ -19,7 +19,7 @@ export const PatientStack = () => {
         void syncAuthFromSupabase();
     }, []);
 
-    const hasPatientProfile = Boolean(user?.patient_id ?? user?.patient?.id);
+    const hasPatientProfile = Boolean((user?.patient_id ?? user?.patient?.id) && user?.patient?.hospital_id);
 
     if (!hasPatientProfile) {
         return (

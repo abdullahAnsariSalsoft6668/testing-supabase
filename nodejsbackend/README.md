@@ -21,10 +21,16 @@ Fill in `nodejsbackend/.env` or root `.env`:
 | `TWILIO_ACCOUNT_SID` | Twilio Account SID (booking confirmation SMS) |
 | `TWILIO_AUTH_TOKEN` | Twilio Auth Token |
 | `TWILIO_FROM_NUMBER` | Twilio sender in E.164 (e.g. `+1…`) |
+| `RETELL_REMINDER_AGENT_ID` | CareHub Reminder agent (outbound 24h call — not Talk to AI) |
+| `RETELL_FROM_NUMBER` | Retell-purchased From number for reminder dials |
+| `REMINDER_LEAD_MINUTES` | Minutes before visit to dial (`1440` = 24h; `1` or `5` for tests) |
+| `REMINDER_TIMEZONE` | Fallback IANA zone (e.g. `America/New_York`) when a hospital has no timezone |
 
 Also run `supabase/migrations/021_retell_anon_read_approved_catalog.sql` in the SQL Editor if you temporarily use the publishable key.
 
-**Booking SMS:** After a successful book (Retell/Node, mobile, or webpanel), Node sends one SMS to the patient’s `users.phone` (E.164). Mobile/web call `POST /notify/booking-sms` — Node must be running (`yarn node:dev` or your hosted URL in `EXPO_PUBLIC_NODE_API_BASE_URL` / `VITE_NODE_API_BASE_URL`). Missing/invalid phone or Twilio errors are logged; booking still succeeds.
+**Booking SMS:** After a successful book (Retell/Node, mobile, or webpanel), Node sends one SMS to the patient’s `users.phone` (E.164). Mobile/web call `POST /notify/booking-sms` — Node must be running (`yarn node:dev` or your hosted URL in `EXPO_PUBLIC_NODE_API_BASE_URL` / `VITE_NODE_API_BASE_URL`). Missing/invalid phone or Twilio errors are logged; booking still succeeds. Twilio trial accounts cannot send custom text — Node retries with Twilio’s `sms_appointment_reminders` template. Upgrade the account for the CareHub message body.
+
+**Reminder calls:** Run `022_appointment_reminder_call.sql` and `023_hospital_timezone.sql`. Node scans on an interval (`REMINDER_POLL_MS`, default 10 min) for `PENDING`/`CONFIRMED` visits about `REMINDER_LEAD_MINUTES` before start. Each visit uses its hospital’s `timezone` (or infers from the hospital address’s US state). `REMINDER_TIMEZONE` is only the fallback. Immediate test: `POST /notify/reminder-call` `{ "appointmentId": "…", "force": true }`. One scan now: `POST /notify/reminder-tick`.
 
 ## Run
 
@@ -41,6 +47,8 @@ npm run dev
 - Legacy: `POST /calls/web` (same handler)
 - Retell tools: `POST /retell/tools/*`
 - Booking SMS notify: `POST /notify/booking-sms` `{ "appointmentId": "…" }`
+- Reminder tick: `POST /notify/reminder-tick`
+- Reminder force dial: `POST /notify/reminder-call` `{ "appointmentId": "…", "force": true }`
 
 ## Retell dashboard — Custom Functions
 

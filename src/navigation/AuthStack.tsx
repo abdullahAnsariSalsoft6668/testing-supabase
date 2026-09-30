@@ -24,6 +24,7 @@ const AuthStack = () => {
             <Stack.Screen name={routes.auth.onboarding} component={authRoutes[routes.auth.onboarding]} />
             <Stack.Screen name={routes.auth.login} component={authRoutes[routes.auth.login]} />
             <Stack.Screen name={routes.auth.register} component={authRoutes[routes.auth.register]} />
+            <Stack.Screen name={routes.auth.hospitalApply} component={authRoutes[routes.auth.hospitalApply]} />
             <Stack.Screen name={routes.auth.forgot} component={authRoutes[routes.auth.forgot]} />
             <Stack.Screen name={routes.auth.forgotVerifyOtp} component={authRoutes[routes.auth.forgotVerifyOtp]} />
             <Stack.Screen name={routes.auth.forgotResetPassword} component={authRoutes[routes.auth.forgotResetPassword]} />

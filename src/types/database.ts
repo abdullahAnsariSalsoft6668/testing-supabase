@@ -1,9 +1,19 @@
-export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN';
+export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN' | 'HOSPITAL_ADMIN';
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 export type BloodGroup = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
 export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
 export type SlotStatus = 'AVAILABLE' | 'BOOKED' | 'BLOCKED';
 export type DoctorStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+export type HospitalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+export type ClinicOptionKind = 'specialization' | 'qualification';
+
+export interface ClinicOption {
+    id: string;
+    hospital_id: string | null;
+    kind: ClinicOptionKind;
+    name: string;
+    created_at: string;
+}
 
 export interface User {
     id: string;
@@ -22,6 +32,7 @@ export interface User {
 export interface Patient {
     id: string;
     user_id: string;
+    hospital_id: string | null;
     blood_group: BloodGroup | null;
     gender: Gender | null;
     dob: string | null;
@@ -31,6 +42,8 @@ export interface Patient {
     allergies: string | null;
     created_at: string;
     updated_at: string;
+    hospitals?: Hospital;
+    users?: User;
 }
 
 export interface Hospital {
@@ -41,6 +54,9 @@ export interface Hospital {
     address: string | null;
     logo_url: string | null;
     description: string | null;
+    /** IANA zone e.g. America/New_York. Empty = infer from address. */
+    timezone?: string | null;
+    status?: HospitalStatus;
     created_at: string;
     updated_at: string;
 }

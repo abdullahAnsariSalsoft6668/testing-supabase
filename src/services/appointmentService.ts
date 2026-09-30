@@ -24,6 +24,14 @@ export async function bookAppointment(params: {
     appointment_time: string;
     notes?: string;
 }) {
+    const [{ data: patient }, { data: doctor }] = await Promise.all([
+        getSupabase().from('patients').select('hospital_id').eq('id', params.patient_id).maybeSingle(),
+        getSupabase().from('doctors').select('hospital_id').eq('id', params.doctor_id).maybeSingle(),
+    ]);
+    if (!patient?.hospital_id || patient.hospital_id !== doctor?.hospital_id) {
+        throw new Error('You can only book doctors at your hospital.');
+    }
+
     const { data: appointment, error: aptError } = await getSupabase()
         .from('appointments')
         .insert({ ...params, status: 'PENDING' })

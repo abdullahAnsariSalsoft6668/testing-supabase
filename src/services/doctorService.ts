@@ -67,14 +67,17 @@ export async function listApprovedDoctors(filters?: { hospitalId?: string; depar
 
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
-    return (data ?? []) as Doctor[];
+    return ((data ?? []) as Doctor[]).filter(
+        (d) => !d.hospitals?.status || d.hospitals.status === 'APPROVED',
+    );
 }
 
-export async function listDoctorsByStatus(status?: DoctorStatus) {
+export async function listDoctorsByStatus(status?: DoctorStatus, hospitalId?: string | null) {
     let query = getSupabase()
         .from('doctors')
         .select('*, users(*), hospitals(*), departments(*)');
     if (status) query = query.eq('status', status);
+    if (hospitalId) query = query.eq('hospital_id', hospitalId);
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return (data ?? []) as Doctor[];

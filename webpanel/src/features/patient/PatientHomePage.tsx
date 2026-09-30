@@ -44,7 +44,11 @@ export function PatientHomePage() {
       <PageHeader
         eyebrow="Your care"
         title={`Hello, ${user?.full_name?.split(' ')[0] || 'there'}`}
-        subtitle="Upcoming visits and gentle reminders — care that stays close."
+        subtitle={
+          user?.hospital?.name
+            ? `Your care at ${user.hospital.name}. Upcoming visits and reminders.`
+            : 'Upcoming visits and gentle reminders — care that stays close.'
+        }
       />
 
       <div className={styles.hero}>

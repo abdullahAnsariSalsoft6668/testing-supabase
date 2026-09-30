@@ -1,6 +1,6 @@
 import type { AuthUserProfile } from '@/models/auth.types';
 import { fetchFullProfile, fetchUserById } from '@/services/userService';
-import { getSession, signOut as supabaseSignOut } from '@/services/authService';
+import { ensureHospitalApplication, ensurePatientHospital, getSession, signOut as supabaseSignOut } from '@/services/authService';
 import { secureStorage } from '@/utils/secureStorage';
 import {
     changeFirstTime,
@@ -61,6 +61,17 @@ export const syncAuthFromSupabase = async () => {
         let userRow: Awaited<ReturnType<typeof fetchUserById>> = null;
 
         try {
+            await ensureHospitalApplication();
+        } catch (applyError) {
+            console.warn('[Auth] ensureHospitalApplication failed:', applyError);
+        }
+        try {
+            await ensurePatientHospital();
+        } catch (patientError) {
+            console.warn('[Auth] ensurePatientHospital failed:', patientError);
+        }
+
+        try {
             profile = await fetchFullProfile(session.user.id);
         } catch (profileError) {
             console.warn('[Auth] fetchFullProfile failed:', profileError);
@@ -85,6 +96,9 @@ export const syncAuthFromSupabase = async () => {
                   patient_id: profile.patient_id,
                   doctor_id: profile.doctor_id,
                   doctor_status: profile.doctor?.status,
+                  hospital_id: profile.hospital_id,
+                  hospital_status: profile.hospital_status,
+                  hospital: profile.hospital,
                   profileComplete: profile.profileComplete,
                   patient: profile.patient,
                   doctor: profile.doctor,
@@ -104,7 +118,10 @@ export const syncAuthFromSupabase = async () => {
                     full_name: String(metadata.full_name ?? metadata.name ?? ''),
                     email: session.user.email ?? '',
                     phone: metadata.phone ? String(metadata.phone) : undefined,
-                    role: (metadata.role as AuthUserProfile['role']) ?? 'PATIENT',
+                    role:
+                        metadata.role === 'DOCTOR' || metadata.role === 'PATIENT'
+                            ? metadata.role
+                            : 'PATIENT',
                     profileComplete: false,
                 };
 

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Toast from 'react-native-toast-message';
@@ -11,16 +11,19 @@ import MyIcons from '@/components/MyIcons';
 import TextComp from '@/components/TextComp';
 import routes from '@/constants/routes';
 import { AdminStackParamList } from '@/navigation/types';
-import { deleteDepartment, listDepartments, listHospitals } from '@/services/hospitalService';
+import { createClinicOption, deleteClinicOption, deleteDepartment, listClinicOptions, listDepartments, listHospitals } from '@/services/hospitalService';
 import { adminScreenStyles as s } from '@/styles/adminScreenStyles';
 import { moderateScale } from '@/styles/scaling';
 import { theme } from '@/styles/theme';
-import type { Department, Hospital } from '@/types/database';
+import type { ClinicOption, ClinicOptionKind, Department, Hospital } from '@/types/database';
+import type { AuthUserProfile } from '@/models/auth.types';
+import { useSelector } from '@/redux/hooks';
 
 type HospitalFilter = 'ALL' | string;
 
 const AdminDepartments = () => {
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+    const user = useSelector((st) => st.auth.userData) as AuthUserProfile;
     const [departments, setDepartments] = useState<Department[]>([]);
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,6 +31,12 @@ const AdminDepartments = () => {
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [dialog, setDialog] = useState<{ visible: boolean; dept: Department | null }>({ visible: false, dept: null });
     const hasFetchedRef = useRef(false);
+    const [optionKind, setOptionKind] = useState<ClinicOptionKind>('specialization');
+    const [optionName, setOptionName] = useState('');
+    const [options, setOptions] = useState<ClinicOption[]>([]);
+    const [optionBusy, setOptionBusy] = useState(false);
+    const isClinicAdmin = user?.role === 'HOSPITAL_ADMIN';
+    const optionHospitalId = isClinicAdmin ? user?.hospital_id ?? null : filter === 'ALL' ? null : filter;
 
     const load = useCallback((hospitalFilter: HospitalFilter) => {
         if (!hasFetchedRef.current) setLoading(true);
@@ -36,17 +45,26 @@ const AdminDepartments = () => {
             listHospitals(),
         ])
             .then(([depts, hosp]) => {
-                setDepartments(depts);
-                setHospitals(hosp);
+                const clinicId = user?.role === 'HOSPITAL_ADMIN' ? user.hospital_id : null;
+                setHospitals(clinicId ? hosp.filter((h) => h.id === clinicId) : hosp);
+                setDepartments(clinicId ? depts.filter((d) => d.hospital_id === clinicId) : depts);
             })
             .catch(() => Toast.show({ type: 'error', text1: 'Failed to load departments' }))
             .finally(() => {
                 setLoading(false);
                 hasFetchedRef.current = true;
             });
-    }, []);
+    }, [user?.role, user?.hospital_id]);
 
     useFocusEffect(useCallback(() => { load(filter); }, [filter, load]));
+
+    useFocusEffect(
+        useCallback(() => {
+            listClinicOptions(optionKind, optionHospitalId)
+                .then(setOptions)
+                .catch(() => setOptions([]));
+        }, [optionKind, optionHospitalId]),
+    );
 
     const changeFilter = (next: HospitalFilter) => {
         hasFetchedRef.current = false;
@@ -94,6 +112,44 @@ const AdminDepartments = () => {
             Toast.show({ type: 'error', text1: 'Delete failed' });
         } finally {
             setDeletingId(null);
+        }
+    };
+
+    const reloadOptions = () => {
+        listClinicOptions(optionKind, optionHospitalId)
+            .then(setOptions)
+            .catch(() => setOptions([]));
+    };
+
+    const handleAddOption = async () => {
+        if (!optionName.trim()) {
+            Toast.show({ type: 'error', text1: 'Enter an option name' });
+            return;
+        }
+        const hospital_id = isClinicAdmin ? user?.hospital_id ?? null : filter === 'ALL' ? null : filter;
+        if (isClinicAdmin && !hospital_id) {
+            Toast.show({ type: 'error', text1: 'Your hospital is not assigned yet' });
+            return;
+        }
+        setOptionBusy(true);
+        try {
+            await createClinicOption({ kind: optionKind, name: optionName, hospital_id });
+            setOptionName('');
+            Toast.show({ type: 'success', text1: 'Option added' });
+            reloadOptions();
+        } catch {
+            Toast.show({ type: 'error', text1: 'Could not add option' });
+        } finally {
+            setOptionBusy(false);
+        }
+    };
+
+    const handleDeleteOption = async (opt: ClinicOption) => {
+        try {
+            await deleteClinicOption(opt.id);
+            reloadOptions();
+        } catch {
+            Toast.show({ type: 'error', text1: 'Delete failed' });
         }
     };
 
@@ -158,6 +214,83 @@ const AdminDepartments = () => {
                                 style={styles.resultText}
                             />
                         ) : null}
+
+                        <View style={styles.optionCard}>
+                            <TextComp text="Doctor apply options" style={s.cardTitle} />
+                            <TextComp
+                                text={
+                                    isClinicAdmin
+                                        ? 'Doctors pick these when they apply to your hospital.'
+                                        : filter === 'ALL'
+                                          ? 'New options apply to every hospital. Filter to a clinic to add hospital-only values.'
+                                          : `New options apply to ${hospitals.find((h) => h.id === filter)?.name ?? 'this hospital'}.`
+                                }
+                                style={styles.descText}
+                            />
+                            <View style={styles.kindRow}>
+                                {(['specialization', 'qualification'] as const).map((kind) => {
+                                    const selected = optionKind === kind;
+                                    return (
+                                        <Pressable
+                                            key={kind}
+                                            style={[styles.kindChip, selected && styles.kindChipSelected]}
+                                            onPress={() => setOptionKind(kind)}
+                                        >
+                                            <TextComp
+                                                text={kind === 'specialization' ? 'Specialization' : 'Qualification'}
+                                                style={[styles.kindChipText, selected && styles.kindChipTextSelected]}
+                                            />
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                            <View style={styles.optionAddRow}>
+                                <TextInput
+                                    style={[s.input, styles.optionInput]}
+                                    value={optionName}
+                                    onChangeText={setOptionName}
+                                    placeholder={optionKind === 'qualification' ? 'e.g. MBBS' : 'e.g. Cardiology'}
+                                    placeholderTextColor={theme.colors.text.muted}
+                                    autoCapitalize="words"
+                                />
+                                <Pressable
+                                    style={[styles.optionAddBtn, optionBusy && { opacity: 0.6 }]}
+                                    onPress={() => void handleAddOption()}
+                                    disabled={optionBusy}
+                                >
+                                    {optionBusy ? (
+                                        <ActivityIndicator size="small" color={theme.colors.text.inverse} />
+                                    ) : (
+                                        <TextComp text="Add" style={styles.optionAddBtnText} />
+                                    )}
+                                </Pressable>
+                            </View>
+                            {options.length === 0 ? (
+                                <TextComp text="No options yet." style={styles.descPlaceholder} />
+                            ) : (
+                                options.map((opt) => {
+                                    const canDelete =
+                                        user?.role === 'ADMIN' ||
+                                        (isClinicAdmin && opt.hospital_id === user?.hospital_id);
+                                    return (
+                                        <View key={opt.id} style={styles.optionRow}>
+                                            <View style={{ flex: 1 }}>
+                                                <TextComp text={opt.name} style={styles.optionName} />
+                                                <TextComp
+                                                    text={opt.hospital_id ? 'This hospital' : 'All hospitals'}
+                                                    style={styles.optionMeta}
+                                                />
+                                            </View>
+                                            {canDelete ? (
+                                                <Pressable onPress={() => void handleDeleteOption(opt)}>
+                                                    <TextComp text="Delete" style={s.deleteBtnText} />
+                                                </Pressable>
+                                            ) : null}
+                                        </View>
+                                    );
+                                })
+                            )}
+                        </View>
                     </>
                 ) : null}
 
@@ -184,7 +317,7 @@ const AdminDepartments = () => {
                                     </View>
                                     <View style={styles.cardInfo}>
                                         <TextComp text={d.name} style={s.cardTitle} numberOfLines={1} />
-                                        {d.hospitals?.name ? (
+                                        {user?.role !== 'HOSPITAL_ADMIN' && d.hospitals?.name ? (
                                             <View style={styles.hospitalChip}>
                                                 <MyIcons name="healthTabHospital" size={11} stroke={theme.palette.teal.main} />
                                                 <TextComp text={d.hospitals.name} style={styles.hospitalChipText} numberOfLines={1} />
@@ -344,6 +477,79 @@ const styles = StyleSheet.create({
         fontSize: moderateScale(12),
         color: theme.colors.text.muted,
         fontStyle: 'italic',
+    },
+    optionCard: {
+        backgroundColor: theme.colors.card.background,
+        borderRadius: theme.radius.card,
+        borderWidth: 1,
+        borderColor: theme.colors.border.default,
+        padding: moderateScale(14),
+        gap: moderateScale(10),
+        ...theme.shadows.card,
+    },
+    kindRow: {
+        flexDirection: 'row',
+        gap: moderateScale(8),
+    },
+    kindChip: {
+        paddingHorizontal: moderateScale(12),
+        paddingVertical: moderateScale(8),
+        borderRadius: moderateScale(20),
+        borderWidth: 1,
+        borderColor: theme.colors.border.default,
+        backgroundColor: theme.colors.background.secondary,
+    },
+    kindChipSelected: {
+        backgroundColor: theme.palette.teal.surface,
+        borderColor: theme.palette.teal.main,
+    },
+    kindChipText: {
+        fontSize: moderateScale(12),
+        fontWeight: '600',
+        color: theme.colors.text.secondary,
+    },
+    kindChipTextSelected: {
+        color: theme.palette.teal.dark,
+        fontWeight: '700',
+    },
+    optionAddRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: moderateScale(8),
+    },
+    optionInput: {
+        flex: 1,
+    },
+    optionAddBtn: {
+        backgroundColor: theme.palette.teal.main,
+        paddingHorizontal: moderateScale(14),
+        paddingVertical: moderateScale(10),
+        borderRadius: moderateScale(12),
+        minWidth: moderateScale(64),
+        alignItems: 'center',
+    },
+    optionAddBtnText: {
+        fontSize: moderateScale(13),
+        fontWeight: '700',
+        color: theme.colors.text.inverse,
+    },
+    optionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: moderateScale(8),
+        paddingVertical: moderateScale(6),
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.border.default,
+    },
+    optionName: {
+        fontSize: moderateScale(14),
+        fontWeight: '600',
+        color: theme.colors.text.primary,
+    },
+    optionMeta: {
+        fontSize: moderateScale(11),
+        color: theme.colors.text.secondary,
+        marginTop: moderateScale(2),
     },
 });
 

@@ -7,10 +7,13 @@ import { FormSkeleton, HealthScreenHeader } from '@/components/health';
 import MyIcons from '@/components/MyIcons';
 import TextComp from '@/components/TextComp';
 import { AdminStackParamList } from '@/navigation/types';
+import { US_CLINIC_TIMEZONES } from '@/constants/timezones';
 import { createHospital, getHospital, updateHospital } from '@/services/hospitalService';
 import { adminScreenStyles as s } from '@/styles/adminScreenStyles';
 import { theme } from '@/styles/theme';
 import { formatErrorMessage } from '@/utils/formatError';
+import type { AuthUserProfile } from '@/models/auth.types';
+import { useSelector } from '@/redux/hooks';
 
 type FieldConfig = {
     key: 'name' | 'email' | 'phone' | 'address' | 'description';
@@ -24,13 +27,15 @@ type FieldConfig = {
 const HospitalForm = () => {
     const route = useRoute<RouteProp<AdminStackParamList, 'HospitalForm'>>();
     const navigation = useNavigation();
-    const hospitalId = route.params?.hospitalId;
+    const user = useSelector((st) => st.auth.userData) as AuthUserProfile;
+    const hospitalId = route.params?.hospitalId ?? (user?.role === 'HOSPITAL_ADMIN' ? user.hospital_id ?? undefined : undefined);
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [description, setDescription] = useState('');
+    const [timezone, setTimezone] = useState('');
     const [saving, setSaving] = useState(false);
     const [loadingData, setLoadingData] = useState(!!hospitalId);
 
@@ -43,6 +48,7 @@ const HospitalForm = () => {
                     setPhone(h.phone ?? '');
                     setAddress(h.address ?? '');
                     setDescription(h.description ?? '');
+                    setTimezone(h.timezone ?? '');
                 })
                 .finally(() => setLoadingData(false));
         }
@@ -61,10 +67,14 @@ const HospitalForm = () => {
                 phone: phone.trim() || null,
                 address: address.trim() || null,
                 description: description.trim() || null,
+                timezone: timezone.trim() || null,
                 logo_url: null,
             };
             if (hospitalId) {
                 await updateHospital(hospitalId, payload);
+            } else if (user?.role === 'HOSPITAL_ADMIN') {
+                Toast.show({ type: 'error', text1: 'You can only edit your own hospital' });
+                return;
             } else {
                 await createHospital(payload);
             }
@@ -124,6 +134,55 @@ const HospitalForm = () => {
                                     </View>
                                 </View>
                             ))}
+                            <View style={s.fieldDivider} />
+                            <View style={s.fieldRow}>
+                                <View style={s.infoIconWrap}>
+                                    <MyIcons name="locationIcon" size={18} stroke={theme.palette.teal.main} />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <TextComp text="Timezone" style={s.fieldLabel} />
+                                    <TextComp
+                                        text="Used for reminder calls. Leave Auto if the address includes a US state."
+                                        style={s.cardMeta}
+                                    />
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                                        <Pressable
+                                            onPress={() => setTimezone('')}
+                                            style={{
+                                                borderRadius: 16,
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 6,
+                                                borderWidth: 1,
+                                                borderColor: !timezone ? theme.palette.teal.main : theme.colors.border.default,
+                                                backgroundColor: !timezone ? 'rgba(13,148,136,0.12)' : theme.colors.card.background,
+                                            }}
+                                        >
+                                            <TextComp text="Auto" style={s.fieldLabel} />
+                                        </Pressable>
+                                        {US_CLINIC_TIMEZONES.map((z) => {
+                                            const selected = timezone === z.value;
+                                            return (
+                                                <Pressable
+                                                    key={z.value}
+                                                    onPress={() => setTimezone(z.value)}
+                                                    style={{
+                                                        borderRadius: 16,
+                                                        paddingHorizontal: 12,
+                                                        paddingVertical: 6,
+                                                        borderWidth: 1,
+                                                        borderColor: selected ? theme.palette.teal.main : theme.colors.border.default,
+                                                        backgroundColor: selected
+                                                            ? 'rgba(13,148,136,0.12)'
+                                                            : theme.colors.card.background,
+                                                    }}
+                                                >
+                                                    <TextComp text={z.label} style={s.fieldLabel} />
+                                                </Pressable>
+                                            );
+                                        })}
+                                    </View>
+                                </View>
+                            </View>
                         </View>
 
                         <Pressable style={[s.saveBtn, saving && s.saveBtnDisabled]} onPress={handleSave} disabled={saving}>

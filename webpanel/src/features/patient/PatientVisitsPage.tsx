@@ -14,6 +14,7 @@ export function PatientVisitsPage() {
   const [rows, setRows] = useState<Appointment[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   async function reload() {
     if (!user?.patient_id) return;
@@ -27,8 +28,11 @@ export function PatientVisitsPage() {
         return;
       }
       setLoading(true);
+      setError('');
       try {
         await reload();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not load visits');
       } finally {
         setLoading(false);
       }
@@ -41,14 +45,17 @@ export function PatientVisitsPage() {
     <div>
       <PageHeader title="My visits" subtitle="Track and cancel upcoming appointments." />
       <Card>
-        {rows.length === 0 ? (
+        {error ? <p className={styles.empty}>{error}</p> : null}
+        {rows.length === 0 && !error ? (
           <p className={styles.empty}>No visits yet.</p>
         ) : (
           <div className={styles.list}>
             {rows.map((a) => (
               <div key={a.id} className={styles.row}>
                 <div>
-                  <strong>{a.doctors?.users?.full_name ?? 'Doctor'}</strong>
+                  <strong>
+                    {a.doctors?.users?.full_name || a.doctors?.users?.name || 'Doctor'}
+                  </strong>
                   <div className={styles.meta}>
                     {a.appointment_date} · {String(a.appointment_time).slice(0, 5)} ·{' '}
                     {a.doctors?.specialization}

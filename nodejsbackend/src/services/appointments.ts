@@ -90,6 +90,7 @@ export async function bookAppointment(params: {
     throw new Error('Booking insert did not return a row. Check Supabase appointments table permissions.');
   }
 
+  console.log('[appointments] book ok, triggering booking SMS', { appointmentId: data.id });
   // Fire-and-forget — never block or fail the book on SMS errors
   void sendBookingConfirmationSms(String(data.id)).catch((err) => {
     console.error('[appointments] booking SMS failed:', formatErrorMessage(err));

@@ -105,7 +105,9 @@ TWILIO_FROM_NUMBER=+1xxxxxxxxxx
 
 > **Important:** `SUPABASE_SERVICE_ROLE_KEY` must be the **service_role** secret from Supabase → Settings → API.
 >
-> **SMS:** Node must be running for mobile/web booking SMS (`POST /notify/booking-sms`). Patient `users.phone` should be E.164 (`+…`). On Twilio trial, verify the recipient number in the Twilio console.
+> **SMS:** Node must be running for mobile/web booking SMS (`POST /notify/booking-sms`). Patient `users.phone` should be E.164 (`+…`). On Twilio trial, verify the recipient and expect Twilio’s sample appointment-reminder text (custom CareHub copy works after you upgrade).
+>
+> **Reminder calls:** Run `022_appointment_reminder_call.sql` and `023_hospital_timezone.sql`. Set `RETELL_REMINDER_AGENT_ID`, `RETELL_FROM_NUMBER`, and `REMINDER_LEAD_MINUTES` (`1440` = 24h; `1` or `5` plus `REMINDER_POLL_MS=15000` for tests). Set each hospital’s timezone in Admin → Hospitals (NY vs CA vs TX). `REMINDER_TIMEZONE` is only the fallback. Force a dial: `POST /notify/reminder-call` `{ "appointmentId": "…", "force": true }`.
 
 After changing `.env`, restart Metro with cache reset:
 

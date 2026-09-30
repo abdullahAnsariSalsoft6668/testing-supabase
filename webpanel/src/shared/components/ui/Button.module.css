@@ -28,14 +28,15 @@
 }
 
 .primary {
-  background: var(--gradient-primary);
-  color: var(--ink);
-  box-shadow: var(--shadow-button);
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 8px 16px rgba(30, 117, 229, 0.28);
 }
 
 .primary:hover:not(:disabled) {
-  box-shadow: 0 8px 18px rgba(30, 117, 229, 0.32);
-  filter: brightness(1.02);
+  background: var(--lime-dark);
+  box-shadow: 0 10px 20px rgba(30, 117, 229, 0.36);
+  filter: none;
 }
 
 .secondary {

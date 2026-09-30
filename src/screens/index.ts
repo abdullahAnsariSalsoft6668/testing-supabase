@@ -6,6 +6,8 @@ export { default as ForgotVerifyOtp } from './auth/ForgotVerifyOtp/ForgotVerifyO
 export { default as Login } from './auth/Login/Login';
 export { default as Onboard } from './auth/Onboard/OnBoard';
 export { default as Register } from './auth/Register/Register';
+export { default as HospitalApply } from './auth/HospitalApply/HospitalApply';
+export { default as HospitalPendingApproval } from './auth/HospitalPending/HospitalPendingApproval';
 
 // Patient
 export { default as PatientHome } from './patient/Home/PatientHome';
@@ -34,9 +36,11 @@ export { default as DoctorPendingApproval } from './doctor/Pending/DoctorPending
 // Admin
 export { default as AdminDashboard } from './admin/Dashboard/AdminDashboard';
 export { default as AdminHospitals } from './admin/Hospitals/AdminHospitals';
+export { default as AdminHospitalRequests } from './admin/Hospitals/AdminHospitalRequests';
 export { default as HospitalForm } from './admin/Hospitals/HospitalForm';
 export { default as AdminDepartments } from './admin/Departments/AdminDepartments';
 export { default as DepartmentForm } from './admin/Departments/DepartmentForm';
 export { default as AdminDoctors } from './admin/Doctors/AdminDoctors';
+export { default as AdminPatients } from './admin/Patients/AdminPatients';
 export { default as DoctorDetailAdmin } from './admin/Doctors/DoctorDetailAdmin';
 export { default as AdminMenu } from './admin/Menu/AdminMenu';

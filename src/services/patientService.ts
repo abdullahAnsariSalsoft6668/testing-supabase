@@ -41,3 +41,11 @@ export async function getPatientByUserId(userId: string) {
 
 export const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 export const GENDERS: Gender[] = ['MALE', 'FEMALE', 'OTHER'];
+
+export async function listPatients(hospitalId?: string | null) {
+    let query = getSupabase().from('patients').select('*, users(*), hospitals(*)').order('created_at', { ascending: false });
+    if (hospitalId) query = query.eq('hospital_id', hospitalId);
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data ?? []) as Patient[];
+}

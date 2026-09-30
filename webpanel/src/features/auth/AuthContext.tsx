@@ -21,6 +21,7 @@ type AuthContextValue = {
     fullName: string;
     phone?: string;
     role: Extract<UserRole, 'PATIENT' | 'DOCTOR'>;
+    hospitalId?: string;
   }) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;

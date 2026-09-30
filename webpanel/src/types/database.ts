@@ -1,7 +1,17 @@
-export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN';
+export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN' | 'HOSPITAL_ADMIN';
 export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
 export type SlotStatus = 'AVAILABLE' | 'BOOKED' | 'BLOCKED';
 export type DoctorStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+export type HospitalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+export type ClinicOptionKind = 'specialization' | 'qualification';
+
+export interface ClinicOption {
+  id: string;
+  hospital_id: string | null;
+  kind: ClinicOptionKind;
+  name: string;
+  created_at: string;
+}
 
 export interface User {
   id: string;
@@ -19,11 +29,17 @@ export interface User {
 export interface Patient {
   id: string;
   user_id: string;
+  hospital_id: string | null;
   blood_group: string | null;
   gender: string | null;
   dob: string | null;
   address: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  allergies?: string | null;
   created_at: string;
+  hospitals?: Hospital;
+  users?: User;
 }
 
 export interface Hospital {
@@ -33,6 +49,9 @@ export interface Hospital {
   phone: string | null;
   address: string | null;
   description: string | null;
+  /** IANA zone e.g. America/New_York. Empty = infer from address. */
+  timezone?: string | null;
+  status?: HospitalStatus;
   created_at: string;
 }
 
@@ -87,5 +106,8 @@ export interface FullUserProfile extends User {
   patient?: Patient | null;
   doctor_id?: string;
   doctor?: Doctor | null;
+  hospital_id?: string | null;
+  hospital_status?: HospitalStatus | null;
+  hospital?: Hospital | null;
   profileComplete: boolean;
 }

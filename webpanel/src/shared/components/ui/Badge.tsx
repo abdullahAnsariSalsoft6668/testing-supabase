@@ -10,6 +10,7 @@ const toneMap: Record<string, string> = {
   SUSPENDED: 'pending',
   AVAILABLE: 'ok',
   BOOKED: 'info',
+  HOSPITAL_ADMIN: 'info',
   ADMIN: 'info',
   DOCTOR: 'teal',
   PATIENT: 'soft',

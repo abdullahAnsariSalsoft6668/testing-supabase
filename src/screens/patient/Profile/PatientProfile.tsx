@@ -42,7 +42,10 @@ const PatientProfile = () => {
             <ScrollView contentContainerStyle={[healthScreenStyles.body, healthScreenStyles.scrollContent]}>
                 <View style={healthScreenStyles.card}>
                     <TextComp text={user.full_name} style={healthScreenStyles.cardTitle} />
-                    <TextComp text="Patient" style={healthScreenStyles.cardMeta} />
+                    <TextComp
+                        text={user.hospital?.name ? `Patient · ${user.hospital.name}` : 'Patient'}
+                        style={healthScreenStyles.cardMeta}
+                    />
                 </View>
                 <TextComp text="Phone" style={healthScreenStyles.label} />
                 <TextInput style={healthScreenStyles.input} value={phone} onChangeText={setPhone} />

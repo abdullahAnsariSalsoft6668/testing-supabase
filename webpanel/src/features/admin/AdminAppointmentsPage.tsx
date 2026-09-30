@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { PageHeader } from '@/shared/components/ui/PageHeader';
 import { Card } from '@/shared/components/ui/Card';
 import { Badge } from '@/shared/components/ui/Badge';
+import { useAuth } from '@/features/auth/AuthContext';
+import { isHospitalAdmin } from '@/features/auth/roleHome';
 import { listAllAppointments } from '@/services/dataService';
 import { PageSkeleton } from '@/shared/components/ui/Shimmer';
 import type { Appointment } from '@/types/database';
@@ -12,6 +14,8 @@ function displayName(user?: { full_name?: string; name?: string } | null) {
 }
 
 export function AdminAppointmentsPage() {
+  const { user } = useAuth();
+  const hospitalId = isHospitalAdmin(user?.role) ? user?.hospital_id ?? null : null;
   const [rows, setRows] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,12 +23,12 @@ export function AdminAppointmentsPage() {
     void (async () => {
       setLoading(true);
       try {
-        setRows(await listAllAppointments());
+        setRows(await listAllAppointments(40, hospitalId));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [hospitalId]);
 
   if (loading) return <PageSkeleton stats={0} variant="table" />;
 
@@ -33,7 +37,9 @@ export function AdminAppointmentsPage() {
       <PageHeader
         eyebrow="Visits"
         title="Appointments"
-        subtitle="System-wide visit activity across every hospital."
+        subtitle={
+          hospitalId ? 'Visit activity at your hospital.' : 'System-wide visit activity across every hospital.'
+        }
       />
       <Card>
         <div className={styles.tableWrap}>

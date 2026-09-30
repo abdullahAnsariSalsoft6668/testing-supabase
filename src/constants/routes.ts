@@ -8,6 +8,7 @@ const routes = {
         forgotResetPassword: 'ForgotResetPassword',
         onboarding: 'Onboarding',
         register: 'Register',
+        hospitalApply: 'HospitalApply',
         completeProfile: 'CompleteProfile',
         pendingApproval: 'PendingApproval',
     },
@@ -48,8 +49,10 @@ const routes = {
             menu: 'AdminMenu',
         },
         hospitalForm: 'HospitalForm',
+        hospitalRequests: 'AdminHospitalRequests',
         departmentForm: 'DepartmentForm',
         doctorDetailAdmin: 'DoctorDetailAdmin',
+        patients: 'AdminPatients',
     },
     navigator: {
         auth: 'Auth',
@@ -69,6 +72,7 @@ export const authRoutes = {
     [routes.auth.forgotResetPassword]: Screens.ForgotResetPassword,
     [routes.auth.onboarding]: Screens.Onboard,
     [routes.auth.register]: Screens.Register,
+    [routes.auth.hospitalApply]: Screens.HospitalApply,
     [routes.auth.completeProfile]: Screens.CompleteProfile,
     [routes.auth.pendingApproval]: Screens.DoctorPendingApproval,
 };

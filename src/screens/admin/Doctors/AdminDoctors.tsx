@@ -19,6 +19,8 @@ import { formatErrorMessage } from '@/utils/formatError';
 import { getDoctorImageSource } from '@/utils/doctorImage';
 import { getUserDisplayName } from '@/utils/userDisplay';
 import type { Doctor, DoctorStatus } from '@/types/database';
+import type { AuthUserProfile } from '@/models/auth.types';
+import { useSelector } from '@/redux/hooks';
 
 type DoctorFilter = 'ALL' | DoctorStatus;
 
@@ -70,6 +72,7 @@ const FILTER_LABELS: Record<DoctorFilter, string> = {
 
 const AdminDoctors = () => {
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+    const user = useSelector((st) => st.auth.userData) as AuthUserProfile;
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<DoctorFilter>('PENDING');
@@ -78,7 +81,7 @@ const AdminDoctors = () => {
 
     const load = useCallback((statusFilter: DoctorFilter) => {
         if (!hasFetchedRef.current) setLoading(true);
-        listDoctorsByStatus(statusFilter === 'ALL' ? undefined : statusFilter)
+        listDoctorsByStatus(statusFilter === 'ALL' ? undefined : statusFilter, user?.role === 'HOSPITAL_ADMIN' ? user.hospital_id : undefined)
             .then(setDoctors)
             .catch((e) => {
                 setDoctors([]);
@@ -88,7 +91,7 @@ const AdminDoctors = () => {
                 setLoading(false);
                 hasFetchedRef.current = true;
             });
-    }, []);
+    }, [user?.role, user?.hospital_id]);
 
     useFocusEffect(useCallback(() => { load(filter); }, [filter, load]));
 

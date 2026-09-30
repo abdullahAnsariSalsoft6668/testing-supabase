@@ -13,8 +13,10 @@ export const AdminStack = () => (
     <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.background.secondary } }} id={undefined}>
         <Stack.Screen name="AdminTabs" component={AdminTabs} />
         <Stack.Screen name={routes.admin.hospitalForm} component={Screens.HospitalForm} />
+        <Stack.Screen name={routes.admin.hospitalRequests} component={Screens.AdminHospitalRequests} />
         <Stack.Screen name={routes.admin.departmentForm} component={Screens.DepartmentForm} />
         <Stack.Screen name={routes.admin.doctorDetailAdmin} component={Screens.DoctorDetailAdmin} />
+        <Stack.Screen name={routes.admin.patients} component={Screens.AdminPatients} />
     </Stack.Navigator>
 );
 

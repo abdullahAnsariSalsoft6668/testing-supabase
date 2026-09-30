@@ -3,6 +3,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
 
+import * as Screens from '@/screens';
 import type { AuthUserProfile } from '@/models/auth.types';
 import AuthStack from '@/navigation/AuthStack';
 import { AdminStack } from '@/navigation/AdminStack';
@@ -53,6 +54,13 @@ export const Routes = () => {
         screen = <Stack.Screen name="Auth" component={AuthStack} />;
     } else if (user?.role === 'ADMIN') {
         screen = <Stack.Screen name="Admin" component={AdminStack} />;
+    } else if (user?.role === 'HOSPITAL_ADMIN') {
+        screen =
+            user.hospital_status === 'APPROVED' ? (
+                <Stack.Screen name="Admin" component={AdminStack} />
+            ) : (
+                <Stack.Screen name="HospitalPending" component={Screens.HospitalPendingApproval} />
+            );
     } else if (user?.role === 'DOCTOR' || user?.doctor_id || user?.doctor?.id) {
         screen = <Stack.Screen name="Doctor" component={DoctorStack} />;
     } else {
@@ -62,7 +70,7 @@ export const Routes = () => {
     return (
         <NavigationContainer theme={navTheme}>
             <Stack.Navigator
-                key={isAuthenticated ? user?.role ?? 'auth' : 'guest'}
+                key={isAuthenticated ? `${user?.role ?? 'auth'}-${user?.hospital_status ?? ''}` : 'guest'}
                 screenOptions={{ headerShown: false }}
                 id={undefined}
             >

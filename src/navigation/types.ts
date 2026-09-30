@@ -3,12 +3,14 @@ export type RootStackParamList = {
     Patient: undefined;
     Doctor: undefined;
     Admin: undefined;
+    HospitalPending: undefined;
 };
 
 export type AuthStackParamList = {
     Login: undefined;
     Onboarding: undefined;
     Register: undefined;
+    HospitalApply: undefined;
     Forgot: undefined;
     ForgotVerifyOtp: { email: string };
     ForgotResetPassword: { email: string; otp: string };
@@ -63,6 +65,8 @@ export type AdminTabParamList = {
 export type AdminStackParamList = AdminTabParamList & {
     AdminTabs: undefined;
     HospitalForm: { hospitalId?: string } | undefined;
+    AdminHospitalRequests: undefined;
     DepartmentForm: { departmentId?: string; hospitalId?: string } | undefined;
     DoctorDetailAdmin: { doctorId: string };
+    AdminPatients: undefined;
 };

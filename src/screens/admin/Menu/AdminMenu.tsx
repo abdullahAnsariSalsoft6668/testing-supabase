@@ -58,7 +58,7 @@ const AdminMenu = () => {
                     </View>
                     <TextComp text={user.full_name ?? ''} style={{ fontSize: moderateScale(18), fontWeight: '700', color: theme.colors.text.primary }} />
                     <View style={[s.roleBadge, { marginTop: moderateScale(8) }]}>
-                        <TextComp text="ADMIN" style={s.roleText} />
+                        <TextComp text={user.role ?? 'ADMIN'} style={s.roleText} />
                     </View>
                 </View>
 

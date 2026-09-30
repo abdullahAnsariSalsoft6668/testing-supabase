@@ -9,6 +9,8 @@ import MyIcons from '@/components/MyIcons';
 import TextComp from '@/components/TextComp';
 import { AdminStackParamList } from '@/navigation/types';
 import { createDepartment, listHospitals, updateDepartment } from '@/services/hospitalService';
+import type { AuthUserProfile } from '@/models/auth.types';
+import { useSelector } from '@/redux/hooks';
 import { getSupabase } from '@/utils/supabase';
 import { adminScreenStyles as s } from '@/styles/adminScreenStyles';
 import { moderateScale } from '@/styles/scaling';
@@ -27,18 +29,27 @@ const DepartmentForm = () => {
     const route = useRoute<RouteProp<AdminStackParamList, 'DepartmentForm'>>();
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
+    const user = useSelector((s) => s.auth.userData) as AuthUserProfile;
     const { departmentId, hospitalId: initialHospitalId } = route.params ?? {};
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [hospitalId, setHospitalId] = useState(initialHospitalId ?? '');
+    const [hospitalId, setHospitalId] = useState(initialHospitalId ?? user?.hospital_id ?? '');
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const tasks: Promise<void>[] = [
-            listHospitals().then(setHospitals).then(() => undefined),
+            listHospitals()
+                .then((rows) => {
+                    if (user?.role === 'HOSPITAL_ADMIN' && user.hospital_id) {
+                        setHospitals(rows.filter((h) => h.id === user.hospital_id));
+                    } else {
+                        setHospitals(rows);
+                    }
+                })
+                .then(() => undefined),
         ];
         if (departmentId) {
             tasks.push(
@@ -131,6 +142,53 @@ const DepartmentForm = () => {
                             </View>
                         </View>
 
+                        {user?.role === 'HOSPITAL_ADMIN' || hospitals.length <= 1 ? (
+                            hospitals[0] ? (
+                                <>
+                                    <SectionTitle title="Hospital" />
+                                    <View style={s.formCard}>
+                                        <View style={styles.hospitalOption}>
+                                            <View style={[styles.hospitalOptionIcon, styles.hospitalOptionIconSelected]}>
+                                                <MyIcons
+                                                    name="healthTabHospital"
+                                                    size={18}
+                                                    stroke={theme.palette.teal.main}
+                                                />
+                                            </View>
+                                            <View style={styles.hospitalOptionText}>
+                                                <TextComp
+                                                    text={hospitals[0].name}
+                                                    style={[styles.hospitalOptionName, styles.hospitalOptionNameSelected]}
+                                                    numberOfLines={1}
+                                                />
+                                                {hospitals[0].address ? (
+                                                    <TextComp
+                                                        text={hospitals[0].address}
+                                                        style={styles.hospitalOptionMeta}
+                                                        numberOfLines={1}
+                                                    />
+                                                ) : null}
+                                            </View>
+                                        </View>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <SectionTitle title="Hospital Assignment" hint="Required" />
+                                    <View style={s.formCard}>
+                                        <View style={styles.emptyHospitals}>
+                                            <MyIcons name="healthTabHospital" size={28} stroke={theme.colors.text.muted} />
+                                            <TextComp text="No hospitals found" style={styles.emptyHospitalsTitle} />
+                                            <TextComp
+                                                text="Create a hospital before adding departments."
+                                                style={styles.emptyHospitalsBody}
+                                            />
+                                        </View>
+                                    </View>
+                                </>
+                            )
+                        ) : (
+                        <>
                         <SectionTitle title="Hospital Assignment" hint="Required" />
                         <View style={s.formCard}>
                             {hospitals.length === 0 ? (
@@ -177,6 +235,8 @@ const DepartmentForm = () => {
                                 })
                             )}
                         </View>
+                        </>
+                        )}
 
                         <SectionTitle title="Department Details" />
                         <View style={s.formCard}>

@@ -14,10 +14,14 @@ import { AdminStackParamList } from '@/navigation/types';
 import { deleteHospital, listHospitals } from '@/services/hospitalService';
 import { adminScreenStyles as s } from '@/styles/adminScreenStyles';
 import { theme } from '@/styles/theme';
+import type { AuthUserProfile } from '@/models/auth.types';
+import { useSelector } from '@/redux/hooks';
 import type { Hospital } from '@/types/database';
 
 const AdminHospitals = () => {
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+    const user = useSelector((st) => st.auth.userData) as AuthUserProfile;
+    const isClinicAdmin = user?.role === 'HOSPITAL_ADMIN';
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -27,13 +31,19 @@ const AdminHospitals = () => {
     const load = useCallback(() => {
         if (!hasFetchedRef.current) setLoading(true);
         listHospitals()
-            .then(setHospitals)
+            .then((rows) => {
+                if (isClinicAdmin) {
+                    setHospitals(rows.filter((h) => h.id === user?.hospital_id));
+                } else {
+                    setHospitals(rows);
+                }
+            })
             .catch(() => Toast.show({ type: 'error', text1: 'Failed to load hospitals' }))
             .finally(() => {
                 setLoading(false);
                 hasFetchedRef.current = true;
             });
-    }, []);
+    }, [isClinicAdmin, user?.hospital_id]);
 
     useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -65,10 +75,12 @@ const AdminHospitals = () => {
                 onCancel={() => setDialog({ visible: false, hospital: null })}
             />
             <HealthScreenHeader
-                title="Hospitals"
-                subtitle="Manage healthcare facilities"
+                title={isClinicAdmin ? 'My hospital' : 'Hospitals'}
+                subtitle={isClinicAdmin ? 'Your clinic details' : 'Manage healthcare facilities'}
                 rightAction={
+                    isClinicAdmin ? undefined : (
                     <AdminAddButton onPress={() => navigation.navigate(routes.admin.hospitalForm, {})} />
+                    )
                 }
             />
 
@@ -111,6 +123,14 @@ const AdminHospitals = () => {
                                             <TextComp text={h.email} style={s.cardMeta} numberOfLines={1} />
                                         </View>
                                     ) : null}
+                                    <View style={s.metaRow}>
+                                        <MyIcons name="locationIcon" size={13} stroke={theme.colors.text.secondary} />
+                                        <TextComp
+                                            text={h.status ? `Status: ${h.status}` : 'Status: APPROVED'}
+                                            style={s.cardMeta}
+                                            numberOfLines={1}
+                                        />
+                                    </View>
                                 </View>
                                 <MyIcons name="rightChevron" size={16} stroke={theme.colors.text.secondary} />
                             </View>
@@ -125,6 +145,7 @@ const AdminHospitals = () => {
                                     <MyIcons name="editIcon" size={14} stroke={theme.palette.teal.main} />
                                     <TextComp text="Edit" style={s.editBtnText} />
                                 </Pressable>
+                                {isClinicAdmin ? null : (
                                 <Pressable
                                     style={[s.actionBtn, s.deleteBtn]}
                                     onPress={() => setDialog({ visible: true, hospital: h })}
@@ -139,6 +160,7 @@ const AdminHospitals = () => {
                                         </>
                                     )}
                                 </Pressable>
+                                )}
                             </View>
                         </View>
                     ))
