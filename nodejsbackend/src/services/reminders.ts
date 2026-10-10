@@ -200,6 +200,8 @@ async function loadReminderContext(appointmentId: string): Promise<
       .select('user_id')
       .eq('id', appointment.patient_id)
       .maybeSingle();
+
+    console.log('[reminder] patient', patient);
     if (patient?.user_id) {
       const { data: user } = await supabase
         .from('users')
@@ -209,9 +211,12 @@ async function loadReminderContext(appointmentId: string): Promise<
       phone = user?.phone ?? null;
       patientName = displayName(user, 'there');
     }
+    console.log('[reminder] phone', phone);
+    console.log('[reminder] patientName', patientName);
   }
 
   const e164 = normalizePhoneE164(phone);
+  console.log('[reminder] e164', e164);
   if (!e164) {
     return { ok: false, reason: 'Phone missing or not E.164 (+…)', appointment };
   }
