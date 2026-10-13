@@ -12,6 +12,18 @@ export function addLocalDays(base: Date, days: number): Date {
   return d;
 }
 
+/** Voice-friendly clock: "2 o'clock in the afternoon", "9 30 in the morning". */
+export function formatVoiceTime(time: string): string {
+  const [hStr, minStr] = String(time).split(':');
+  let hour = Number(hStr);
+  const minute = Number(minStr) || 0;
+  if (!Number.isFinite(hour)) return String(time).slice(0, 5);
+  const period = hour < 12 ? 'in the morning' : hour < 17 ? 'in the afternoon' : 'in the evening';
+  hour = hour % 12 || 12;
+  if (minute === 0) return `${hour} o'clock ${period}`;
+  return `${hour} ${String(minute).padStart(2, '0')} ${period}`;
+}
+
 /** Voice-friendly label: "today (Wednesday July 15)", "tomorrow (...)", or "Saturday July 18". */
 export function formatVoiceDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);

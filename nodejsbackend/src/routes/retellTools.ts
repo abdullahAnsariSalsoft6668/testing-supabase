@@ -324,5 +324,7 @@ router.post('/my-appointments', (req, res) => runTool(req, res, 'my_appointments
 router.post('/my_appointments', (req, res) => runTool(req, res, 'my_appointments'));
 router.post('/cancel-appointment', (req, res) => runTool(req, res, 'cancel_appointment'));
 router.post('/cancel_appointment', (req, res) => runTool(req, res, 'cancel_appointment'));
+router.post('/reschedule-appointment', (req, res) => runTool(req, res, 'reschedule_appointment'));
+router.post('/reschedule_appointment', (req, res) => runTool(req, res, 'reschedule_appointment'));
 
 export default router;

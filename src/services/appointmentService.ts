@@ -44,6 +44,19 @@ export async function bookAppointment(params: {
     return appointment as Appointment;
 }
 
+/** Same-doctor move: keeps the visit id. Other doctors must book then cancel. */
+export async function rescheduleAppointment(appointmentId: string, slotId: string) {
+    const { data, error } = await getSupabase().rpc('reschedule_appointment', {
+        p_appointment_id: appointmentId,
+        p_slot_id: slotId,
+    });
+    if (error) throw error;
+    if (data && !(data as { unchanged?: boolean }).unchanged) {
+        notifyBookingSms(appointmentId);
+    }
+    return data;
+}
+
 export async function cancelAppointment(appointmentId: string, _slotId?: string | null) {
     const { data, error } = await getSupabase()
         .from('appointments')

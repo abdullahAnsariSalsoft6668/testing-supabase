@@ -9,6 +9,11 @@ Desktop.ini
 ehthumbs.db
 
 # =========================
+# Cursor Skills
+# =========================
+.cursor/skills/ui-ux-pro-max/
+
+# =========================
 # Editors / IDE
 # =========================
 .idea/

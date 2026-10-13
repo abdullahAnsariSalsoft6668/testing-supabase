@@ -229,7 +229,7 @@ yarn android
 
 1. Create a **Single-Prompt Agent** (not Conversation Flow demo).
 2. **Prompt** — hospital assistant; use `{{patient_name}}` in text.
-3. **Functions** → add 5 Custom Functions (POST):
+3. **Functions** → add Custom Functions (POST):
 
 | Name | URL |
 |------|-----|
@@ -238,6 +238,7 @@ yarn android
 | `book_appointment` | `https://YOUR_NGROK/retell/tools/book-appointment` |
 | `my_appointments` | `https://YOUR_NGROK/retell/tools/my-appointments` |
 | `cancel_appointment` | `https://YOUR_NGROK/retell/tools/cancel-appointment` |
+| `reschedule_appointment` | `https://YOUR_NGROK/retell/tools/reschedule-appointment` |
 
 4. **Publish** the agent.
 5. Copy **Agent ID** → `nodejsbackend/.env` → `RETELL_AGENT_ID`.

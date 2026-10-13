@@ -61,6 +61,7 @@ Point each function to your public URL (use ngrok for local dev):
 | `book_appointment` | `POST https://YOUR_HOST/retell/tools/book-appointment` |
 | `my_appointments` | `POST https://YOUR_HOST/retell/tools/my-appointments` |
 | `cancel_appointment` | `POST https://YOUR_HOST/retell/tools/cancel-appointment` |
+| `reschedule_appointment` | `POST https://YOUR_HOST/retell/tools/reschedule-appointment` |
 
 ### Suggested agent prompt
 
@@ -92,6 +93,26 @@ Keep responses short for voice.
 **book_appointment** — `doctor_id`, `slot_id` (from list_slots), optional `appointment_date` / `appointment_time`
 
 **my_appointments** — no args (uses `patient_id` from call metadata)
+
+**reschedule_appointment** — `slot_id` from `list_slots` for the **same doctor**. Optional `appointment_id` (reminder calls already send it in metadata). Does **not** change doctor. Never cancel then book.
+
+Example `reschedule_appointment` parameters JSON:
+```json
+{
+  "type": "object",
+  "required": ["slot_id"],
+  "properties": {
+    "slot_id": {
+      "type": "string",
+      "description": "slot_id from list_slots for the same doctor as the current visit"
+    },
+    "appointment_id": {
+      "type": "string",
+      "description": "Optional; reminder calls already pass this in call metadata"
+    }
+  }
+}
+```
 
 Example `list_slots` parameters JSON:
 ```json

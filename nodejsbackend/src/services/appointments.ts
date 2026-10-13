@@ -99,6 +99,58 @@ export async function bookAppointment(params: {
   return data;
 }
 
+export type RescheduleResult = {
+  ok: boolean;
+  unchanged?: boolean;
+  appointment_id: string;
+  doctor_id: string;
+  appointment_date: string;
+  appointment_time: string;
+};
+
+export async function rescheduleAppointment(
+  appointmentId: string,
+  slotId: string,
+  patientId: string,
+): Promise<RescheduleResult> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase.rpc('reschedule_appointment', {
+    p_appointment_id: appointmentId,
+    p_slot_id: slotId,
+    p_patient_id: patientId,
+  });
+
+  if (error) {
+    console.error('[appointments] reschedule failed:', formatErrorMessage(error), error);
+    throw error;
+  }
+
+  const row = (data ?? {}) as RescheduleResult;
+  if (!row.ok && !row.appointment_id) {
+    throw new Error('Reschedule did not return a visit.');
+  }
+
+  if (!row.unchanged) {
+    void sendBookingConfirmationSms(String(row.appointment_id)).catch((err) => {
+      console.error('[appointments] reschedule SMS failed:', formatErrorMessage(err));
+    });
+  }
+
+  return row;
+}
+
+export async function getPatientAppointment(appointmentId: string, patientId: string) {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('id, patient_id, doctor_id, slot_id, appointment_date, appointment_time, status')
+    .eq('id', appointmentId)
+    .eq('patient_id', patientId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function cancelAppointment(appointmentId: string, patientId: string) {
   const supabase = getSupabase();
   const { data, error } = await supabase

@@ -8,12 +8,20 @@ import {
 import {
   bookAppointment,
   cancelAppointment,
+  getPatientAppointment,
   listPatientAppointments,
+  rescheduleAppointment,
 } from './appointments';
 import { findAnyPatientId, findPatientIdByEmail, patientExists } from './patients';
 import { config } from '../config';
 import { formatErrorMessage } from '../utils/errors';
-import { formatVoiceDate, isOpenDateQuery, localISODate, parseDateInput } from '../utils/dates';
+import {
+  formatVoiceDate,
+  formatVoiceTime,
+  isOpenDateQuery,
+  localISODate,
+  parseDateInput,
+} from '../utils/dates';
 
 export type RetellToolPayload = {
   name?: string;
@@ -1151,6 +1159,69 @@ export async function handleRetellTool(
       // --------------------------------------------------
       // CANCEL APPOINTMENT
       // --------------------------------------------------
+
+      case 'reschedule_appointment':
+      case 'reschedule-appointment': {
+        console.log('');
+        console.log(`[${requestId}] ---------- RESCHEDULE APPOINTMENT ----------`);
+
+        if (!patientId) {
+          return 'Patient id is missing.';
+        }
+
+        const appointmentId = appointmentIdFromCall(payload, args);
+        if (!appointmentId) {
+          return 'appointment_id is required.';
+        }
+
+        const slotRef = String(
+          args.slot_id ?? args.slotId ?? args.slot ?? args.time ?? args.appointment_time ?? '',
+        ).trim();
+        if (!slotRef || isUnresolvedRetellTemplate(slotRef)) {
+          return 'New time is required. Call list_slots for this same doctor, then pass that slot_id.';
+        }
+
+        const uuidLike =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slotRef);
+
+        let slotId = uuidLike ? slotRef : '';
+        if (!slotId) {
+          const current = await getPatientAppointment(appointmentId, patientId);
+          if (!current?.doctor_id) {
+            return 'Visit not found for this patient.';
+          }
+          const doctors = await listApprovedDoctors();
+          const doctor = resolveDoctor(doctors, current.doctor_id);
+          if (!doctor) {
+            return 'Could not find this doctor to move the visit.';
+          }
+          const slots = await loadDoctorUpcoming(doctor);
+          const slot = resolveSlot(slots, slotRef);
+          if (!slot) {
+            return `Could not match that time. ${formatDaysAndSlots(doctor, slots)}`;
+          }
+          slotId = slot.id;
+        }
+
+        try {
+          const moved = await rescheduleAppointment(appointmentId, slotId, patientId);
+          const dateLabel = formatVoiceDate(String(moved.appointment_date ?? ''));
+          const timeLabel = formatVoiceTime(String(moved.appointment_time ?? ''));
+          if (moved.unchanged) {
+            return `This visit is already on ${dateLabel} at ${timeLabel}. Tell the patient slowly. Do not cancel. Then end_call.`;
+          }
+          return (
+            `Reschedule successful. Same visit, now ${dateLabel} at ${timeLabel}. ` +
+            `Tell the patient slowly. Do not cancel this visit. Then end_call.`
+          );
+        } catch (err) {
+          console.error(`[${requestId}] RESCHEDULE APPOINTMENT FAILED:`, err);
+          return (
+            `Reschedule failed: ${formatErrorMessage(err)}. ` +
+            `The original visit is unchanged. Tell the patient slowly, then end_call.`
+          );
+        }
+      }
 
       case 'cancel_appointment': {
         console.log('');

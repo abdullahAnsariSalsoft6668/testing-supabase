@@ -451,6 +451,19 @@ export async function cancelAppointment(id: string) {
   return updateAppointmentStatus(id, 'CANCELLED');
 }
 
+/** Same-doctor move: keeps the visit id. Other doctors must book then cancel. */
+export async function rescheduleAppointment(appointmentId: string, slotId: string) {
+  const { data, error } = await supabase.rpc('reschedule_appointment', {
+    p_appointment_id: appointmentId,
+    p_slot_id: slotId,
+  });
+  if (error) throw error;
+  if (data && !(data as { unchanged?: boolean }).unchanged) {
+    notifyBookingSms(appointmentId);
+  }
+  return data;
+}
+
 export async function getDashboardCounts(hospitalId?: string | null) {
   const hospitalsQ = hospitalId
     ? supabase.from('hospitals').select('id', { count: 'exact', head: true }).eq('id', hospitalId)
