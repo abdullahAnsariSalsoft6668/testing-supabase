@@ -172,6 +172,47 @@ async function loadTimeZonesForAppointments(rows: AppointmentRow[]): Promise<Map
   return tzByAppointment;
 }
 
+async function loadUserContact(userId: string): Promise<{ phone: string | null; name: string }> {
+  const supabase = getSupabase();
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('phone, full_name')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    logReminder('warn', '[reminder] users lookup failed', {
+      userId,
+      reason: formatErrorMessage(error),
+    });
+  }
+
+  let phone = user?.phone ?? null;
+  let name = displayName(user, '');
+
+  if (!phone || !name) {
+    const { data: authData, error: authError } = await supabase.auth.admin.getUserById(userId);
+    if (authError) {
+      logReminder('warn', '[reminder] auth user lookup failed', {
+        userId,
+        reason: formatErrorMessage(authError),
+      });
+    } else {
+      const meta = authData.user?.user_metadata ?? {};
+      phone =
+        phone ||
+        authData.user?.phone ||
+        (typeof meta.phone === 'string' ? meta.phone : null);
+      name =
+        name ||
+        (typeof meta.full_name === 'string' ? meta.full_name : '') ||
+        (typeof meta.name === 'string' ? meta.name : '');
+    }
+  }
+
+  return { phone, name: name || 'there' };
+}
+
 async function loadReminderContext(appointmentId: string): Promise<
   { ok: true; ctx: ReminderContext } | { ok: false; reason: string; appointment?: AppointmentRow }
 > {
@@ -195,28 +236,23 @@ async function loadReminderContext(appointmentId: string): Promise<
   let phone: string | null = null;
   let patientName = 'there';
   if (appointment.patient_id) {
-    const { data: patient } = await supabase
+    const { data: patient, error: patientError } = await supabase
       .from('patients')
       .select('user_id')
       .eq('id', appointment.patient_id)
       .maybeSingle();
-
-    console.log('[reminder] patient', patient);
-    if (patient?.user_id) {
-      const { data: user } = await supabase
-        .from('users')
-        .select('phone, full_name, name')
-        .eq('id', patient.user_id)
-        .maybeSingle();
-      phone = user?.phone ?? null;
-      patientName = displayName(user, 'there');
+    if (patientError) {
+      logReminder('warn', '[reminder] patient lookup failed', {
+        reason: formatErrorMessage(patientError),
+      });
+    } else if (patient?.user_id) {
+      const contact = await loadUserContact(patient.user_id);
+      phone = contact.phone;
+      patientName = contact.name;
     }
-    console.log('[reminder] phone', phone);
-    console.log('[reminder] patientName', patientName);
   }
 
   const e164 = normalizePhoneE164(phone);
-  console.log('[reminder] e164', e164);
   if (!e164) {
     return { ok: false, reason: 'Phone missing or not E.164 (+…)', appointment };
   }
@@ -229,12 +265,8 @@ async function loadReminderContext(appointmentId: string): Promise<
       .eq('id', appointment.doctor_id)
       .maybeSingle();
     if (doctor?.user_id) {
-      const { data: doctorUser } = await supabase
-        .from('users')
-        .select('full_name, name')
-        .eq('id', doctor.user_id)
-        .maybeSingle();
-      doctorName = displayName(doctorUser, 'Doctor');
+      const contact = await loadUserContact(doctor.user_id);
+      doctorName = contact.name === 'there' ? 'Doctor' : contact.name;
     }
   }
 

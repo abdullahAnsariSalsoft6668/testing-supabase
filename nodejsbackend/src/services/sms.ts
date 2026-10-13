@@ -222,7 +222,7 @@ export async function sendBookingConfirmationSms(appointmentId: string): Promise
       if (doctor?.user_id) {
         const { data: doctorUser } = await supabase
           .from('users')
-          .select('full_name, name')
+          .select('full_name')
           .eq('id', doctor.user_id)
           .maybeSingle();
         doctorName = displayName(doctorUser, 'Doctor');
