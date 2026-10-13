@@ -356,10 +356,12 @@ async function dialReminder(ctx: ReminderContext): Promise<ReminderDialResult> {
       metadata: {
         patient_id: appointment.patient_id,
         appointment_id: appointment.id,
+        doctor_id: appointment.doctor_id ?? '',
       },
       retell_llm_dynamic_variables: {
         patient_name: patientName,
         patient_id: appointment.patient_id,
+        doctor_id: appointment.doctor_id ?? '',
         doctor_name: doctorName,
         appointment_date: dateLabel,
         appointment_time: timeLabel,

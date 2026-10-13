@@ -37,11 +37,19 @@ function normalizePatientId(value: unknown): string {
   return id;
 }
 
+function firstCallId(...values: unknown[]): string {
+  for (const candidate of values) {
+    const id = normalizePatientId(candidate);
+    if (id) return id;
+  }
+  return '';
+}
+
 function patientIdFromCall(payload: RetellToolPayload, args: Record<string, unknown>): string {
   const meta = payload.call?.metadata ?? {};
   const vars = payload.call?.retell_llm_dynamic_variables ?? {};
 
-  const candidates: unknown[] = [
+  return firstCallId(
     args.patient_id,
     args.patientId,
     meta.patient_id,
@@ -50,14 +58,31 @@ function patientIdFromCall(payload: RetellToolPayload, args: Record<string, unkn
     vars.patientId,
     payload.call?.patient_id,
     payload.call?.patientId,
-  ];
+  );
+}
 
-  for (const candidate of candidates) {
-    const id = normalizePatientId(candidate);
-    if (id) return id;
-  }
+function doctorIdFromCall(payload: RetellToolPayload, args: Record<string, unknown>): string {
+  const meta = payload.call?.metadata ?? {};
+  const vars = payload.call?.retell_llm_dynamic_variables ?? {};
+  return firstCallId(
+    args.doctor_id,
+    args.doctorId,
+    args.doctor,
+    args.doctor_name,
+    meta.doctor_id,
+    vars.doctor_id,
+  );
+}
 
-  return '';
+function appointmentIdFromCall(payload: RetellToolPayload, args: Record<string, unknown>): string {
+  const meta = payload.call?.metadata ?? {};
+  const vars = payload.call?.retell_llm_dynamic_variables ?? {};
+  return firstCallId(
+    args.appointment_id,
+    args.appointmentId,
+    meta.appointment_id,
+    vars.appointment_id,
+  );
 }
 
 let cachedTestPatientId: string | null | undefined;
@@ -578,13 +603,7 @@ export async function handleRetellTool(
             `[${requestId}] Doctors loaded: ${doctors.length}`,
           );
 
-          const doctorRef = String(
-            args.doctor_id ??
-              args.doctorId ??
-              args.doctor ??
-              args.doctor_name ??
-              '',
-          ).trim();
+          const doctorRef = doctorIdFromCall(payload, args);
 
           let dateRaw = String(
             args.date ??
@@ -754,13 +773,7 @@ export async function handleRetellTool(
           // Resolve doctor
           // ----------------------------------------------
 
-          const doctorRef = String(
-            args.doctor_id ??
-              args.doctorId ??
-              args.doctor ??
-              args.doctor_name ??
-              '',
-          ).trim();
+          const doctorRef = doctorIdFromCall(payload, args);
 
           console.log(
             `[${requestId}] Doctor ref: ${
@@ -1153,11 +1166,7 @@ export async function handleRetellTool(
           return 'Patient id is missing.';
         }
 
-        const appointmentId = String(
-          args.appointment_id ??
-            args.appointmentId ??
-            '',
-        ).trim();
+        const appointmentId = appointmentIdFromCall(payload, args);
 
         console.log(
           `[${requestId}] Appointment ID provided: ${
