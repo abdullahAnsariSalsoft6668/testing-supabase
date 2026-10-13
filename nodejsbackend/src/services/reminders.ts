@@ -172,26 +172,36 @@ async function loadTimeZonesForAppointments(rows: AppointmentRow[]): Promise<Map
   return tzByAppointment;
 }
 
-async function loadUserContact(userId: string): Promise<{ phone: string | null; name: string }> {
-  const supabase = getSupabase();
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('phone, full_name')
-    .eq('id', userId)
-    .maybeSingle();
+type UserContactRow = {
+  phone?: string | null;
+  full_name?: string | null;
+  name?: string | null;
+};
 
-  if (error) {
-    logReminder('warn', '[reminder] users lookup failed', {
-      userId,
-      reason: formatErrorMessage(error),
-    });
+async function loadPublicUserRow(userId: string): Promise<UserContactRow | null> {
+  const supabase = getSupabase();
+  // Live DBs differ: some have full_name, this project still has name.
+  const attempts = ['phone, full_name', 'phone, name', '*'] as const;
+  let lastError = '';
+
+  for (const columns of attempts) {
+    const { data, error } = await supabase.from('users').select(columns).eq('id', userId).maybeSingle();
+    if (!error) return (data as UserContactRow | null) ?? null;
+    lastError = formatErrorMessage(error);
+    if (!/does not exist/i.test(lastError)) break;
   }
 
+  logReminder('warn', '[reminder] users lookup failed', { userId, reason: lastError });
+  return null;
+}
+
+async function loadUserContact(userId: string): Promise<{ phone: string | null; name: string }> {
+  const user = await loadPublicUserRow(userId);
   let phone = user?.phone ?? null;
   let name = displayName(user, '');
 
   if (!phone || !name) {
-    const { data: authData, error: authError } = await supabase.auth.admin.getUserById(userId);
+    const { data: authData, error: authError } = await getSupabase().auth.admin.getUserById(userId);
     if (authError) {
       logReminder('warn', '[reminder] auth user lookup failed', {
         userId,
